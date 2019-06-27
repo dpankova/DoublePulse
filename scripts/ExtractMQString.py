@@ -55,7 +55,7 @@ def GetMCTreeInfo(frame):
         tau = 0
 
         for part in neutrino_chldn:
-            if abs(part.pdg_encoding) == 11:
+            if abs(part.pdg_encoding) == 15:
                 tau = part
 
         if tau == 0:
@@ -148,13 +148,13 @@ def GetWaveform(frame):
     sort_st_charge.sort(key=lambda x: x[0])
     max_q_st = sort_st_charge[-1][1]
     max_q = sort_st_charge[-1][0]
-#    print max_q
     if max_q < 600:
         return False
 
-    im_data = []    
+    wfs_data = []    
+    wfs_info = []    
     doms = []
-
+    
     for omkey in string_keys[max_q_st]:
         if not omkey in pulses:
             continue        
@@ -162,26 +162,18 @@ def GetWaveform(frame):
         qs = pulses[omkey]
         dpos = geometry[omkey].position
  
-
         dom = {}
         dom['key'] = (int(omkey.string),int(omkey.om))
         dom['qdom'] = qdom
         dom['dom_position'] = (float(dpos.x),float(dpos.y),float(dpos.z))
 
-
-     
         for wf in wf_map[omkey]:
             if wf.status == 0 and wf.source_index == 0:
                 doms.append(dom)
-                wf_vect = list(wf.waveform)
-                for i, bin_val in enumerate(wf_vect):
-                    sample=[]
-                    sample.append(float(dpos.z))
-                    sample.append(float((wf.time+wf.bin_width*i)*v))
-                    sample.append(float(bin_val*10**12))
-                    im_data.append(np.array(sample))
-
-
+                wf_data = np.array(wf.waveform)
+                wf_info = np.array([wf.time, wf.bin_width, omkey.om])
+                wfs_data.append(wf_data)
+                wfs_info.append(wf_info)
      
 
     string = {}
@@ -189,30 +181,27 @@ def GetWaveform(frame):
     string["doms"] = np.array(doms)
     string["charge"] = max_q
         
-    im_data = np.array(im_data)
-    dom_z = np.unique(im_data[:,0])
-    n_doms = len(dom_z)
-    z_min = dom_z[0]
-    z_max = dom_z[-1]
-    im_data = im_data[im_data[:, 1].argsort()]
-    width = 3.3333
-    x_min = im_data[:,1][0]
-    x_max = im_data[:,1][-1]
-    x_bin = (x_max-x_min)/width+1
-        
-    im, xed, yed = np.histogram2d(im_data[:,1],im_data[:,0],weights=im_data[:,2],bins=[x_bin,n_doms], range=[[x_min,x_max],[z_min,z_max]])
+    wfs_data = np.array(wfs_data)
+    wfs_info = np.array(wfs_info)
+    
+    n_y_bins = 60    
+    n_x_bins = 300   
+    im = np.zeros(shape = (n_x_bins,n_y_bins))
 
+    t_min = np.min(wfs_info[:,0])
+    wfs_info = [[int((i[0]-t_min)/i[1]),int(i[2])-1] for i in wfs_info]
+    
+    for i, pos in enumerate(wfs_info):
+        if pos[0] < n_x_bins and pos[0]+128 < n_x_bins:
+            im[pos[0]:pos[0]+128 ,pos[1]] = wfs_data[i][:]
+        elif pos[0] < n_x_bins:    
+            im[pos[0]:,pos[1]] = wfs_data[i][:n_x_bins-pos[0]]
+            
     data.append(im)
-
-
-
-
     event_info['strings'] = string
     info.append(event_info)
 
 
-#    print info
-#    print data
 #@icetray.traysegment
 def TestCuts(file_list):
     tray = I3Tray()
