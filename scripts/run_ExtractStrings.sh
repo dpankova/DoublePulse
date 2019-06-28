@@ -23,7 +23,7 @@ export PARROT_RUN="$UHOME/cctools/bin/parrot_run"
 export PARROT_CVMFS_ALIEN_CACHE="/gpfs/group/dfc13/default/cache/"
 export CVMFS="/cvmfs/icecube.opensciencegrid.org"
 ENV_SHELL="/gpfs/group/dfc13/default/dasha/oscNext_meta/build/env-shell.sh"
-SCRIPT="/storage/home/dup193/work/double_pulse/ExtractStrings.py"
+SCRIPT="/storage/home/dup193/work/double_pulse/ExtractMQString.py"
 #SCRIPT="/storage/home/fxh140/work/muon_background/veto/ESTES_run.py"
 
 #==============================================================================
@@ -76,12 +76,8 @@ if [ ! -d "$DIRECTORY" ]; then
     mkdir -p ${outdir}
 fi
 cd ${outdir}
-p1= $1
-# p2= $2
-echo $p1
-# echo $p2
 
-i3_run py2-v3.1.1 "$ENV_SHELL" 'python' "$SCRIPT" $1 #$2 
+i3_run py2-v3.1.1 "$ENV_SHELL" 'python' "$SCRIPT" -p $1 -i $2 -o $3 
 
 end=`date +%s`
 runtime=$((end-start))

@@ -9,7 +9,32 @@ from icecube import icetray, dataclasses, dataio, phys_services, WaveCalibrator
 from argparse import ArgumentParser      
 import pickle
 
-name = sys.argv[1]
+
+parser = ArgumentParser()
+
+parser.add_argument("-i","--infile",
+                    dest="infile",
+                    type=str,
+                    default="",
+                    help="[I]nfile name")
+
+parser.add_argument("-o","--outfile",
+                    dest="outfile",
+                    type=str,
+                    default="Ot",
+                    help="base name for outfile")
+
+parser.add_argument('-p', '--meson_pdg',
+                    dest='pdg',
+                    type=int,
+                    default=15,
+                    help='pdg number of primary meson produced my nu: e = 11,mu = 13,tau = 15')
+
+args = parser.parse_args()
+
+infiles=args.infile
+outfile=args.outfile
+part_pdg=args.pdg
 
 c=0.299792458
 n=1.3195
@@ -21,10 +46,7 @@ geofile = dataio.I3File(gfile)
 file_list.append(gfile)
 
 
-#data_file = "/storage/home/d/dup193/work/double_pulse/data/Tau/l2_00000001.i3.zst"
-data_file = "/storage/home/d/dup193/work/double_pulse/" + name +".i3.bz2"
-#name = "DP_Tau1PeV_Big"
-for filename in glob.glob(data_file):
+for filename in glob.glob(infiles):
     file_list.append(filename)
 
 
@@ -55,7 +77,7 @@ def GetMCTreeInfo(frame):
         tau = 0
 
         for part in neutrino_chldn:
-            if abs(part.pdg_encoding) == 15:
+            if abs(part.pdg_encoding) == part_pdg:
                 tau = part
 
         if tau == 0:
@@ -227,7 +249,7 @@ def TestCuts(file_list):
         ("Force",True),
         )
     tray.Add(GetWaveform, "getwave", Streams=[icetray.I3Frame.Physics])
- #   tray.AddModule('I3Writer', 'writer', Filename= name+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
+ #   tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
     tray.AddModule('TrashCan','thecan')
     tray.Execute()
     tray.Finish()
@@ -235,11 +257,11 @@ def TestCuts(file_list):
 
 TestCuts(file_list = file_list)
 print "done"
-output_1 = open(name+"_info" + '.pkl',"wb")
+output_1 = open(outfile+"_info" + '.pkl',"wb")
 pickle.dump(info, output_1, -1)
 output_1.close()
-print "saved info"
-np.save(name+"_data"+".npy",data)
-print "finished"
+print "saved info", len(info)
+np.save(outfile+"_data"+".npy",data)
+print "finished", len(data)
 #print data
 #print info
