@@ -1,0 +1,15 @@
+#100TeVParticles.sub -- extract partices of particular energy
+
+Idx     = $(Process)+1
+executable = /data/user/dpankova/double_pulse/MakePlot.py
+arguments = -o MakePlot_$INT(Idx) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuTau/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Idx)/l2_000*.i3.zst 
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/MakePlot_NuTau_CC_$INT(Idx).log
+output = /scratch/dpankova/double_pulse/MakePlot_NuTau_CC_$INT(Idx).out
+error = /scratch/dpankova/double_pulse/MakePlot_NuTau_CC_$INT(Idx).error
+should_transfer_files = YES
+request_cpus = 1
+request_memory = 3GB                                                                                                               
+request_disk = 2GB 
+queue 14
