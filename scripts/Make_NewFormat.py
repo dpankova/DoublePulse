@@ -57,7 +57,7 @@ part_pdg=args.pdg
 energy_min=args.energy_min
 energy_max=args.energy_max
 skip=args.skip
-#print "skip", skip
+print "skip", skip
 
 c=0.299792458                                                                                                                       
 n=1.3195
@@ -75,14 +75,14 @@ file_list.append(gfile)
 for filename in infiles:
     skip_it = False
     for sk in skip:
-       skip_it = sk in filename
+        skip_it = sk in filename
     if not skip_it:
-       file_list.append(filename)
+	file_list.append(filename)
 
 i_frame = geofile.pop_frame()
 g_frame = geofile.pop_frame()
 geometry = g_frame["I3Geometry"].omgeo
-#print file_list
+print file_list
 
 
 data = []
@@ -173,15 +173,15 @@ def CheckData(frame):
     has_header = frame.Has("I3EventHeader")
     has_rawdata =  False
     if frame.Has("InIceRawData"):
-       try:
-          rd = 0
-          rd = frame["InIceRawData"]
-          if len(rd) != 0:
-             has_rawdata = True
-          else: 
-             has_rawdata = False
-       except:
-          has_rawdata = False
+	try:
+	    rd = 0
+	    rd = frame["InIceRawData"]
+	    if len(rd) != 0:
+		has_rawdata = True
+	    else: 
+		has_rawdata = False
+	except:
+	    has_rawdata = False
     
     has_weights =  frame.Has("I3MCWeightDict")
     has_mctree = frame.Has("I3MCTree")
@@ -192,8 +192,8 @@ def CheckData(frame):
     if frame.Has("SplitInIcePulses"):
         try:
             pulses = dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')                                         
-            if not (len(pulses) == 0):
-               has_pulses = True
+	    if not (len(pulses) == 0):
+                has_pulses = True
         except:
             has_pulses = False
     #print(has_header,has_weights,has_rawdata,has_mctree,has_stats,has_stream,has_pulses)
@@ -216,11 +216,19 @@ def GetWaveform(frame):
     mctree = frame["I3MCTree"]                                                     
     nu = dataclasses.get_most_energetic_neutrino(mctree)
     nu_chldn = mctree.children(nu.id)
-    meson = nu_chldn[0]
+    meson = 0
+
+    for part in nu_chldn:
+        if abs(part.pdg_encoding) == part_pdg:
+            meson = part
+
+    if meson == 0:
+        print "No Tau"
+        return False
 
     #MAKE Type CUT
-    if (meson.pdg_encoding != abs(part_pdg)):
-       return False
+    #if (meson.pdg_encoding != abs(part_pdg)):
+    #	return False
     
     H = frame["I3EventHeader"]                                                                                                      
 
@@ -247,7 +255,7 @@ def GetWaveform(frame):
            if omkey in pulses:
                qs = pulses[omkey]
                qdom = sum(i.charge for i in qs)
-               string_q = string_q + qdom
+	       string_q = string_q + qdom
        string_qs.append([string_q,string])
 
     #sort strings by charge and find max   
@@ -257,8 +265,9 @@ def GetWaveform(frame):
 
 
     #MAKE Charge CUT
-    if (max_q <300) and (qtot <1000): 
-       return False
+    if (max_q <400) or (qtot <1000): 
+	return False
+
 
     wfs_data = []
     wfs_info = []    
@@ -352,12 +361,12 @@ def TestCuts(file_list):
     return
 
 TestCuts(file_list = file_list)
-#print "i3 file done"
+print "i3 file done"
 data = np.array(data)
 
-mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],))
-np.save(outfile+"_data"+".npy",data)
-#print "finished", data.shape
+mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],1))
+mm_array[:] = data[:]
+print "finished", data.shape
 
 # def TestCuts(file_list):
 #     tray = I3Tray()

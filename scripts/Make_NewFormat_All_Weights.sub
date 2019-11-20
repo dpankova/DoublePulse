@@ -1,0 +1,15 @@
+#100TeVParticles.sub -- extract partices of particular energy
+
+Folder  = $(Item)
+executable = /data/user/dpankova/double_pulse/Make_NewFormat_All_Weights.py
+arguments = -p 15 -o NewFormat_NuTau_Weights_$INT(Folder) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuTau/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_*.i3.zst 
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).log
+output = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).out
+error = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).error
+should_transfer_files   = YES
+request_cpus = 1
+request_memory = 5GB                       
+request_disk = 5GB 
+queue 1 in (1,2,3,4,5,6,7,8,9,10,11,12,13)
