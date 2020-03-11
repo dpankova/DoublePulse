@@ -25,12 +25,6 @@ parser.add_argument("-o","--outfile",
                     default="Ot",
                     help="base name for outfile")
 
-parser.add_argument('-p', '--meson_pdg',
-                    dest='pdg',
-                    type=int,
-                    default=15,
-                    help='pdg number of nu: nue = 12, numu =14, nutau =16, pdg number of primary meson produced ny nu: e = 11,mu = 13,tau = 15')
-
 parser.add_argument('-e1', '--min_energy',
                     dest='energy_min',
                     type=int,
@@ -53,7 +47,6 @@ args = parser.parse_args()
 
 infiles=args.infile
 outfile=args.outfile
-part_pdg=args.pdg
 energy_min=args.energy_min
 energy_max=args.energy_max
 skip=args.skip
@@ -72,12 +65,13 @@ gfile = '/data/user/dpankova/double_pulse/GeoCalibDetectorStatus_2013.56429_V1_M
 geofile = dataio.I3File(gfile)
 file_list.append(gfile)
 
-for filename in infiles:
-    skip_it = False
-    for sk in skip:
-        skip_it = sk in filename
-    if not skip_it:
-	file_list.append(filename)
+for files in infiles:
+    for filename in glob.glob(files):
+        skip_it = False
+        for sk in skip:
+            skip_it = sk in filename
+        if not skip_it:
+            file_list.append(filename)
 
 i_frame = geofile.pop_frame()
 g_frame = geofile.pop_frame()
@@ -166,8 +160,9 @@ keys_dtype = np.dtype(
 info_dtype = np.dtype(
     [
         ("id", id_dtype),
-        ("energy", np.float32),
-	("pdg", np.float32),
+	("neutrino", particle_dtype),
+        ("energy", np.float32,(10)),
+	("pdg", np.float32,(10)),
 	("weight", weight_dtype),
 	("keys", keys_dtype)
     ]
@@ -222,17 +217,32 @@ def GetData(frame):
 	mctree = frame["I3MCTree"]                                                     
 	nu = dataclasses.get_most_energetic_neutrino(mctree)
 	nu_chldn = mctree.children(nu.id)
-	meson = 0
+	pdgs = []
+	engs = []
+        
 	for part in nu_chldn:
-	    if abs(part.pdg_encoding) in [11,12,13,14,15,16]:
-		meson = part
-
-	if meson == 0:
+            engs.append(part.energy) 
+	    pdgs.append(part.pdg_encoding)
+              
+      
+	if len(engs) == 0:
 	    has_mctree = False
 	    
-	energy = nu.energy
-	pdg = meson.pdg_encoding
-
+	z = zip(engs,pdgs)
+	zs = sorted(z, key = lambda x: x[0], reverse =True)
+	zs = np.array(zs)
+	engs = np.zeros(10)
+	pdgs = np.zeros(10)
+	   
+	#print(len(zs),zs[:,0])
+	if len(z)>10:
+	    engs = zs[:,0][:10]
+	    pdgs = zs[:,1][:10]
+	else:
+	    engs[:len(zs)] = zs[:,0]
+	    pdgs[:len(zs)] = zs[:,1]
+	    #pdgs = zs[:,1]
+	#print(engs,pdgs)
     #MAKE Type CUT
 #	if (meson.pdg_encoding != abs(part_pdg)):
 #	    return False
@@ -242,14 +252,14 @@ def GetData(frame):
     
     #assign stuctured types
     event = np.zeros(1,dtype = info_dtype)
+    prim = np.zeros(1,dtype = particle_dtype)
     
     
-    
-    keys[["passed","header","raw_data","weights","mctree","cvstats","pulses"]] = (has_header,has_weights,has_rawdata,has_mctree,has_stats,has_stream,has_pulses)
-    
+    keys[["passed","header","raw_data","weights","mctree","cvstats","pulses"]] = (passed, has_header,has_weights,has_rawdata,has_mctree,has_stats,has_pulses)
+    prim[["pdg","energy","position","direction","time","length"]] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
     weight[list(w.keys())] = tuple(w.values())
-    event[["id", "energy", "pdg", "weight","keys"]]=(id[0], energy, pdg, weight[0], keys[0])
-   
+    event[["id", "neutrino", "energy", "pdg", "weight","keys"]]=(id[0], prim, engs, pdgs, weight[0], keys[0])
+#    print(event)
     
     data.append(event)
 

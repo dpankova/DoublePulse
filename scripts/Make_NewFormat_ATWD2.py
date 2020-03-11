@@ -87,6 +87,7 @@ print file_list
 
 
 data = []
+diff = []
 
 id_dtype = np.dtype(
     [
@@ -209,7 +210,7 @@ def CheckData(frame):
     
 def GetWaveform(frame):
     global geometry
-    global info
+    global diff
     global data
     
     if frame['I3MCWeightDict']['InteractionType'] != it:
@@ -258,7 +259,7 @@ def GetWaveform(frame):
 
     pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
     wf_map = frame["CalibratedWaveformsHLCATWD"]
-
+    print(type(wf_map))
     omkeys = wf_map.keys()
     strings_set = set()
     string_keys = {}
@@ -287,33 +288,45 @@ def GetWaveform(frame):
     max_q, max_st = string_qs[0]    
     qtot = sum(i[0] for i in string_qs)
 
-
     #MAKE Charge CUT
     if (max_q <400) or (qtot <1000): 
 	return False
 
-
     wfs_data = []
     wfs_info = []    
+    wfs_data_2 = []
+    wfs_info_2 = []    
     pos_x = []
     pos_y = []
     pos_z = []
     for omkey in string_keys[max_st]:
         if omkey in pulses:
+	    #print(omkey, pulses[omkey])
             pos_x.append(geometry[omkey].position.x)
             pos_y.append(geometry[omkey].position.y)
             pos_z.append(geometry[omkey].position.z)
             for wf in wf_map[omkey]:
-                if wf.status == 0 and wf.source_index == 0:
+#	        print(wf.source,wf.status,wf.source_index,wf.channel)
+                if wf.status == 0 and (wf.source_index == 0):
                     wf_data = np.array(wf.waveform)
                     wf_info = np.array([wf.time, wf.bin_width, omkey.om])
                     wfs_data.append(wf_data)
                     wfs_info.append(wf_info)
-
+		
+		if wf.status == 0 and (wf.source_index == 1):
+                    wf_data = np.array(wf.waveform)
+                    wf_info = np.array([wf.time, wf.bin_width, omkey.om])
+                    wfs_data_2.append(wf_data)
+                    wfs_info_2.append(wf_info)
+		    
     wfs_data = np.array(wfs_data)
     wfs_info = np.array(wfs_info)
+    wfs_data_2 = np.array(wfs_data_2)
+    wfs_info_2 = np.array(wfs_info_2)
+   
     pos_st  = dataclasses.I3Position(np.mean(pos_x), np.mean(pos_y), np.mean(pos_z))
     dist = np.sqrt((cog.x-pos_st.x)**2+(cog.y-pos_st.y)**2+(cog.z-pos_st.z)**2)
+    
     
     #waveform data
     n_y_bins = 60
@@ -322,39 +335,46 @@ def GetWaveform(frame):
 
     t_min = np.min(wfs_info[:,0])
     wfs_info = [[int((i[0]-t_min)/i[1]),int(i[2])-1] for i in wfs_info]
+    wfs_info_2 = [[int((i[0]-t_min)/i[1]),int(i[2])-1] for i in wfs_info_2]
+    for i, inf_2 in enumerate(wfs_info_2):
+        for j, inf in enumerate(wfs_info):
+	    if inf[1] == inf_2[1]:
+		diff.append([inf[0],inf_2[0],inf[1],inf_2[1]])
+		#wf_data[j] = wf_data[j]
 
-    for i, pos in enumerate(wfs_info):
-        if pos[0] < n_x_bins and pos[0]+128 < n_x_bins:
-            im[pos[0]:pos[0]+128 ,pos[1]] = wfs_data[i][:]
-        elif pos[0] < n_x_bins:
-            im[pos[0]:,pos[1]] = wfs_data[i][:n_x_bins-pos[0]] 
+
+   #  for i, pos in enumerate(wfs_info):
+#         if pos[0] < n_x_bins and pos[0]+128 < n_x_bins:
+#             im[pos[0]:pos[0]+128 ,pos[1]] = wfs_data[i][:]
+#         elif pos[0] < n_x_bins:
+#             im[pos[0]:,pos[1]] = wfs_data[i][:n_x_bins-pos[0]] 
     	    
-    im = np.true_divide(im, 10**(-8))
-    im = im.astype(np.float32)	    
+#     im = np.true_divide(im, 10**(-8))
+#     im = im.astype(np.float32)	    
 
-    #get weights
-    w = dict(frame["I3MCWeightDict"])
+#     #get weights
+#     w = dict(frame["I3MCWeightDict"])
     
-    #assign stuctured types
-    event = np.zeros(1,dtype = info_dtype)
+#     #assign stuctured types
+#     event = np.zeros(1,dtype = info_dtype)
 
-    id = np.zeros(1,dtype = id_dtype)
-    prim = np.zeros(1,dtype = particle_dtype)
-    meson = np.zeros(1,dtype = particle_dtype)
-    weight = np.zeros(1,dtype = weight_dtype)
+#     id = np.zeros(1,dtype = id_dtype)
+#     prim = np.zeros(1,dtype = particle_dtype)
+#     meson = np.zeros(1,dtype = particle_dtype)
+#     weight = np.zeros(1,dtype = weight_dtype)
 
-    id[["run_id","sub_run_id","event_id","sub_event_id"]] = (H.run_id,H.sub_run_id,H.event_id,H.sub_event_id)
+#     id[["run_id","sub_run_id","event_id","sub_event_id"]] = (H.run_id,H.sub_run_id,H.event_id,H.sub_event_id)
 
-    prim[["pdg","energy","position","direction","time","length"]] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
-    meson[["pdg","energy","position","direction","time","length"]] = (daughter.pdg_encoding, daughter.energy,[daughter.pos.x,daughter.pos.y,daughter.pos.z],[daughter.dir.zenith,daughter.dir.azimuth],daughter.time,daughter.length)
+#     prim[["pdg","energy","position","direction","time","length"]] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
+#     meson[["pdg","energy","position","direction","time","length"]] = (daughter.pdg_encoding, daughter.energy,[daughter.pos.x,daughter.pos.y,daughter.pos.z],[daughter.dir.zenith,daughter.dir.azimuth],daughter.time,daughter.length)
     
-    weight[list(w.keys())] = tuple(w.values())
+#     weight[list(w.keys())] = tuple(w.values())
     
-    event[["id","image","neutrino","daughter","energies","pdgs", "q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,prim,meson,energies,pdgs, qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
+#     event[["id","image","neutrino","daughter","energies","pdgs", "q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,prim,meson,energies,pdgs, qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
     
-#    print(event['daughter'],event['weight'],event['energies'],event['pdgs'])
+# #    print(event['daughter'],event['weight'],event['energies'],event['pdgs'])
     
-    data.append(event)
+#     data.append(event)
 
 #@icetray.traysegment
 
@@ -389,8 +409,9 @@ def TestCuts(file_list):
 TestCuts(file_list = file_list)
 print "i3 file done"
 data = np.array(data)
-
-mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],1))
+diff = np.array(diff)
+np.save("ATDW_diffs.npy", diff)
+#mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],1))
 mm_array[:] = data[:]
 print "finished", data.shape
 
