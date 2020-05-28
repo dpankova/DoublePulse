@@ -90,7 +90,8 @@ id_dtype = np.dtype(
 )
 particle_dtype = np.dtype(
     [
-        ("pdg", np.uint32),
+	("tree_id", np.uint32,(2)),
+        ("pdg", np.int32),
         ("energy", np.float32),
         ("position", np.float32,(3)),
         ("direction", np.float32,(2)),
@@ -157,12 +158,30 @@ keys_dtype = np.dtype(
            ]
 )
 
+
+tree_dtype = np.dtype(
+    [
+        ("tree_id", np.uint32, (2)),  
+        ("parent_id", np.uint32, (2)),  
+        ("pdg", np.int32),
+        ("parent_pdg", np.int32),
+        ("children_pdgs", np.int32,(10)),
+        ("energy", np.float32),      
+        ("position", np.float32,(3)),
+        ("direction", np.float32,(2)),
+        ("time", np.float32),
+        ("length", np.float32)
+    ]
+)
+
 info_dtype = np.dtype(
     [
         ("id", id_dtype),
 	("neutrino", particle_dtype),
-        ("energy", np.float32,(10)),
-	("pdg", np.float32,(10)),
+	("nutaus", tree_dtype, (10)), 
+        ("taus", tree_dtype, (10)),                                                                                                  
+        ("energy", np.float32,(3)),
+	("pdg", np.float32,(3)),
 	("weight", weight_dtype),
 	("keys", keys_dtype)
     ]
@@ -205,6 +224,9 @@ def GetData(frame):
     id = np.zeros(1,dtype = id_dtype)
     keys = np.zeros(1,dtype = keys_dtype)
     weight = np.zeros(1,dtype = weight_dtype)
+    nu_tree = np.zeros(10,dtype = tree_dtype)
+    tau_tree = np.zeros(10,dtype = tree_dtype)
+    prim = np.zeros(1,dtype = particle_dtype)
     energy = 0
     pdg = 0
 
@@ -223,27 +245,72 @@ def GetData(frame):
 	for part in nu_chldn:
             engs.append(part.energy) 
 	    pdgs.append(part.pdg_encoding)
-              
-      
+            
 	if len(engs) == 0:
 	    has_mctree = False
 	    
 	z = zip(engs,pdgs)
 	zs = sorted(z, key = lambda x: x[0], reverse =True)
 	zs = np.array(zs)
-	engs = np.zeros(10)
-	pdgs = np.zeros(10)
+	engs = np.zeros(3)
+	pdgs = np.zeros(3)
 	   
 	#print(len(zs),zs[:,0])
-	if len(z)>10:
-	    engs = zs[:,0][:10]
-	    pdgs = zs[:,1][:10]
+	if len(z)>3:
+	    engs = zs[:,0][:3]
+	    pdgs = zs[:,1][:3]
 	else:
 	    engs[:len(zs)] = zs[:,0]
 	    pdgs[:len(zs)] = zs[:,1]
+	    
 	    #pdgs = zs[:,1]
 	#print(engs,pdgs)
-    #MAKE Type CUT
+	nu_count = 0
+	tau_count = 0
+	for part in mctree:
+	    if abs(part.pdg_encoding) == 16:
+		if part.id == nu.id:
+		    continue
+		if nu_count <10:
+		    #i mctree.has_parent(part.id)
+		    parent = mctree.parent(part.id)
+		    nu_children = mctree.children(part.id)
+		    cpdgs = np.zeros(10)
+		    cpdg = []
+		    for c in nu_children:
+		        cpdg.append(c.pdg_encoding)
+		    cpdg = np.array(cpdg) 	
+	    
+		    if len(cpdg) > 10:
+			cpdgs[:10] = cpdg[:10]
+		    else:
+			cpdgs[:len(cpdg)] = cpdg
+	    
+		    nu_tree[["tree_id","parent_id","pdg","parent_pdg","children_pdgs","energy","position","direction","time","length"]][nu_count] = ([part.id.majorID, part.id.minorID], [parent.id.majorID, parent.id.minorID], part.pdg_encoding, parent.pdg_encoding, cpdgs, part.energy,[part.pos.x,part.pos.y,part.pos.z],[part.dir.zenith,part.dir.azimuth],part.time, part.length)
+		    nu_count = nu_count +1
+	    
+
+	    if abs(part.pdg_encoding) == 15:
+		if tau_count <10:
+		    parent = mctree.parent(part.id)
+		    tau_children = mctree.children(part.id)
+		    cpdgs = np.zeros(10)
+		    cpdg = []
+		    for c in tau_children:
+		        cpdg.append(c.pdg_encoding)
+		 
+		    cpdg = np.array(cpdg) 		    
+		    if len(cpdg) > 10:
+			cpdgs[:10] = cpdg[:10]
+		    else:
+			cpdgs[:len(cpdg)] = cpdg
+
+#		    print([part.id.majorID, part.id.minorID],[parent.id.majorID, parent.id.minorID], part.pdg_encoding, parent.pdg_encoding, cpdgs, part.energy,[part.pos.x,part.pos.y,part.pos.z],[part.dir.zenith,part.dir.azimuth], part.time, part.length)
+		  	
+		    tau_tree[["tree_id","parent_id","pdg","parent_pdg","children_pdgs","energy","position","direction","time","length"]][tau_count] = ([part.id.majorID, part.id.minorID],[parent.id.majorID, parent.id.minorID], part.pdg_encoding, parent.pdg_encoding, cpdgs, part.energy,[part.pos.x,part.pos.y,part.pos.z],[part.dir.zenith,part.dir.azimuth], part.time, part.length)
+		    tau_count = tau_count +1
+
+#MAKE Type CUT
 #	if (meson.pdg_encoding != abs(part_pdg)):
 #	    return False
     
@@ -252,14 +319,14 @@ def GetData(frame):
     
     #assign stuctured types
     event = np.zeros(1,dtype = info_dtype)
-    prim = np.zeros(1,dtype = particle_dtype)
     
-    
+#    print("AAAA", len(nu_tree), nu_tree)
+#    print("BBBB", len(tau_tree), tau_tree)
     keys[["passed","header","raw_data","weights","mctree","cvstats","pulses"]] = (passed, has_header,has_weights,has_rawdata,has_mctree,has_stats,has_pulses)
-    prim[["pdg","energy","position","direction","time","length"]] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
+    prim[["tree_id","pdg","energy","position","direction","time","length"]] = ([nu.id.majorID, nu.id.minorID], nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
     weight[list(w.keys())] = tuple(w.values())
-    event[["id", "neutrino", "energy", "pdg", "weight","keys"]]=(id[0], prim, engs, pdgs, weight[0], keys[0])
-#    print(event)
+    event[["id", "neutrino", "nutaus", "taus", "energy", "pdg", "weight","keys"]]=(id[0], prim, nu_tree, tau_tree, engs, pdgs, weight[0], keys[0])
+#    print("CCCC", event)
     
     data.append(event)
 
@@ -278,9 +345,9 @@ def TestCuts(file_list):
 TestCuts(file_list = file_list)
 print "i3 file done"
 data = np.array(data)
-
-mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],))
-np.save(outfile+"_data"+".npy",data)
+np.savez_compressed(outfile+"_data"+".npz", data)
+#mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],))
+#np.save(outfile+"_data"+".npy",data)
 print "finished", data.shape
 
 
