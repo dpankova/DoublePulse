@@ -131,6 +131,13 @@ keys_dtype = np.dtype(
     ]
 )
 
+hese_dtype = np.dtype(
+    [
+	("qtot", np.float32),
+	("vheselfveto", np.bool_),
+        ("llhratio", np.float32)
+    ]
+)
 
 tree_dtype = np.dtype(
     [
@@ -301,8 +308,10 @@ info_dtype = np.dtype(
 	("hese_qtot", np.float32),
 	("hese_vheselfveto", np.bool_),
 	("hese_llhratio", np.float32),
+	("prim_daughter", particle_dtype),
         ("primary_child_energy", np.float32,(n_prim_children)),
 	("primary_child_pdg", np.float32,(n_prim_children)),
+	("hese", hese_dtype),
 	("weight", weight_dtype),
 	("qfiltermask", q_filter_mask_dtype),
 	("keys", keys_dtype)
@@ -438,6 +447,7 @@ def GetData(frame):
     tree_2 = np.zeros(n_type,dtype = tree_dtype)
     tree_3 = np.zeros(n_type,dtype = tree_dtype)
     primary = np.zeros(1,dtype = particle_dtype)
+    prim_daughter = np.zeros(1,dtype = particle_dtype)
     energy = 0
     pdg = 0
     if has_mctree:
@@ -447,12 +457,14 @@ def GetData(frame):
 	else:
 	    prim = dataclasses.get_most_energetic_muon(mctree)
 	
-	nu_chldn = mctree.children(prim.id)
+	prim_chldn = mctree.children(prim.id)
 	pdgs = []
+	daughters = []
 	energies = []
         
-	for part in nu_chldn:
-            energies.append(part.energy) 
+	for part in prim_chldn:
+	    energies.append(part.energy)
+	    daughters.append(part)	    
 	    pdgs.append(part.pdg_encoding)
 
 	if len(energies) == 0:
@@ -462,7 +474,7 @@ def GetData(frame):
 	    pdgs = np.zeros(n_prim_children)    
 
 	else:
-	    zipped = zip(energies,pdgs)
+	    zipped = zip(energies,pdgs,daughters)
 	    zipped_sort = sorted(zipped, key = lambda x: x[0], reverse =True)
 	    zipped_sort = np.array(zipped_sort)
 	    energies = np.zeros(n_prim_children)
@@ -475,7 +487,7 @@ def GetData(frame):
 		energies[:len(zipped_sort)] = zipped_sort[:,0]
 		pdgs[:len(zipped_sort)] = zipped_sort[:,1]
 
-    
+        daughter = zipped_sort[0][2]
     
 	tree_1 = Extract_MCTree_part(mctree,prim.id,pdg_to_extract[0])
 	tree_2 = Extract_MCTree_part(mctree,prim.id,pdg_to_extract[1])
@@ -483,7 +495,7 @@ def GetData(frame):
 
 
 	primary[["tree_id","pdg","energy","position","direction","time","length"]] = ([prim.id.majorID, prim.id.minorID], prim.pdg_encoding, prim.energy,[prim.pos.x,prim.pos.y,prim.pos.z],[prim.dir.zenith,prim.dir.azimuth],prim.time, prim.length)
-   
+	prim_daughter[["tree_id","pdg","energy","position","direction","time","length"]] = ([daughter.id.majorID, daughter.id.minorID], daughter.pdg_encoding,daughter.energy,[daughter.pos.x,daughter.pos.y,daughter.pos.z],[daughter.dir.zenith,daughter.dir.azimuth],daughter.time,daughter.length)
     #Images can be made if event has all the keys, passed == True
     passed = has_header and has_weights and has_rawdata and has_mctree and has_stream and has_pulses
 
@@ -491,20 +503,24 @@ def GetData(frame):
     keys = np.zeros(1,dtype = keys_dtype)
     keys[["passed","header","raw_data","weights","mctree","pulses", "conventional","simtrimmer"]] = (passed,has_header,has_rawdata,has_weights,has_mctree,has_pulses,has_conv,has_simtrim)
        
-
-    hese_qtot = 0 
-    hese_vheselfveto =True
+    #Log HESE
+    hese = np.zeros(1,dtype = hese_dtype)
+    hese_qtot = 0
+    hese_vheselfveto = True
     hese_llhratio = 0
-    if frame.Has("HESE_VHESelfVeto") and frame.Has("HESE_CausalQTot") and frame.Has("HESE_llhratio"):
-	hese_qtot = frame["HESE_CausalQTot"].value
-	hese_vheselfveto = frame["HESE_VHESelfVeto"].value
-	hese_llhratio = frame["HESE_llhratio"].value 
+
+    if frame.Has("HESE_VHESelfVeto") and frame.Has("HESE_CausalQTot") and frame.Has("HESE_llratio"):
+       hese_qtot = frame["HESE_CausalQTot"].value
+       hese_vheselfveto = frame["HESE_VHESelfVeto"].value
+       hese_llhratio = frame["HESE_llhratio"].value
+
+    hese[["qtot","vheselfveto","llhratio"]] = (hese_qtot,hese_vheselfveto,hese_llhratio)
     
     
     #assign stuctured types
     event = np.zeros(1,dtype = info_dtype)    
-    event[["id", "primary", "part_type_1", "part_type_2", "part_type_3", "qst","qtot", "hese_qtot","hese_vheselfveto","hese_llhratio", "primary_child_energy", "primary_child_pdg", "weight","qfiltermask","keys"]]=(id[0], primary[0], tree_1, tree_2, tree_3, qst, qtot, hese_qtot, hese_vheselfveto, hese_llhratio, energies, pdgs, weight[0], qfmask[0], keys[0])
-    print("aaa",event['primary_child_pdg'], event['part_type_1'])
+    event[["id", "primary", "part_type_1", "part_type_2", "part_type_3", "qst","qtot", "hese_qtot","hese_vheselfveto","hese_llhratio"'prim_daughterr', "primary_child_energy", "primary_child_pdg", 'hese', "weight","qfiltermask","keys"]]=(id[0], primary[0], tree_1, tree_2, tree_3, qst, qtot, prim_daughter, energies, pdgs, hese[0], weight[0], qfmask[0], keys[0])
+    #print("aaa",event['primary_child_pdg'], event['part_type_1'])
     data.append(event)
 
 #@icetray.traysegment
