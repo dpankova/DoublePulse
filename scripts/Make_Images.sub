@@ -1,18 +1,20 @@
-#100TeVParticles.sub -- extract partices of particular energy
+#Make images
 
 Folder  = $(Item)
 FolderPad = $(Item) - 1
 Num = $(Step)
-executable = /data/user/dpankova/double_pulse/Make_images_no_track.py
-arguments = -it 2 -o LoganVeto_NuTauNC_Qtot1000_Qst400_$INT(Folder)_$INT(Num) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuTau/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_000$INT(FolderPad,%02d)$INT(Num,%02d)*.i3.zst 
+Type = 'NuMuCC'
+IT = 1
+Sim = 'genie'
+executable = /data/user/dpankova/double_pulse/Make_Images.py
+arguments = -it $INT(IT) -o Images_$Type_$INT(Folder)_$INT(Num) -i /data/ana/Cscd/StartingEvents/NuGen_new/SUBSTR(Type,4)/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_000$INT(FolderPad,%02d)$INT(Num,%02d)*.i3.zst -gcd /data/user/dpankova/double_pulse/GeoCalibDetectorStatus_2013.56429_V1_Modified.i3.gz -t $Sim
 run_as_owner = True
 initialdir = /data/user/dpankova/double_pulse/
-log = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).log
-output = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).out
-error = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).error
-should_transfer_files = YES
-transfer_input_files = /data/user/dpankova/double_pulse/Reconstruction.py, /data/user/dpankova/double_pulse/QTot.py, /data/user/dpankova/double_pulse/PolygonContainment.py 
+log = /scratch/dpankova/double_pulse/Make_Images_$Type_$INT(Folder).log
+output = /scratch/dpankova/double_pulse/Make_Images_$Type_$INT(Folder).out
+error = /scratch/dpankova/double_pulse/Make_Images_$Type_$INT(Folder).error
+should_transfer_files   = YES
 request_cpus = 1
-request_memory = 1GB                       
-request_disk = 2GB 
-queue 100 in (1,2,3,4,5,6,7,8,9,10,11,12,13)
+request_memory = 15GB                       
+request_disk = 7GB 
+queue 1 in (1,2,3,4,5,6,7,8,9,10,11,12,13)
