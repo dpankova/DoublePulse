@@ -1,0 +1,18 @@
+#100TeVParticles.sub -- extract partices of particular energy
+
+Folder  = $(Item)
+FolderPad = $(Item) - 1
+Num = $(Step)
+executable = /data/user/dpankova/double_pulse/Make_images_no_track.py
+arguments = -it 2 -o LoganVeto_NuTauNC_Qtot1000_Qst400_$INT(Folder)_$INT(Num) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuTau/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_000$INT(FolderPad,%02d)$INT(Num,%02d)*.i3.zst 
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).log
+output = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).out
+error = /scratch/dpankova/double_pulse/LoganVeto_NuTau_NC_$INT(Folder)_$INT(Num).error
+should_transfer_files = YES
+transfer_input_files = /data/user/dpankova/double_pulse/Reconstruction.py, /data/user/dpankova/double_pulse/QTot.py, /data/user/dpankova/double_pulse/PolygonContainment.py 
+request_cpus = 1
+request_memory = 1GB                       
+request_disk = 2GB 
+queue 100 in (1,2,3,4,5,6,7,8,9,10,11,12,13)
