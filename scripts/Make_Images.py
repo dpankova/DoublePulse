@@ -7,9 +7,9 @@ import numpy as np
 import glob
 import sys
 from icecube import icetray, dataclasses, dataio, WaveCalibrator, common_variables
-import Reconstruction
-import PolygonContainment
-import QTot
+import util.Reconstruction
+import util.PolygonContainment
+import util.QTot
 import pickle
 import argparse
 
