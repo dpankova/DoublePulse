@@ -7,23 +7,8 @@ import numpy as np
 import glob
 import sys
 from icecube import icetray, dataclasses, dataio, WaveCalibrator, common_variables
-import Reconstruction
-import PolygonContainment
-import QTot
 import pickle
 import argparse
-
-
-from icecube.recclasses import I3DipoleFitParams
-from icecube.recclasses import I3LineFitParams
-from icecube.recclasses import I3CLastFitParams
-from icecube.recclasses import I3CscdLlhFitParams
-from icecube.recclasses import I3TensorOfInertiaFitParams
-from icecube.recclasses import I3FillRatioInfo
-from icecube.recclasses import CramerRaoParams
-from icecube.recclasses import I3StartStopParams
-from icecube.gulliver import I3LogLikelihoodFitParams
-#from icecube.millipede import MillipedeFitParams
 
 parser = argparse.ArgumentParser()
 
@@ -85,7 +70,6 @@ count  = 0
 #data_file = "/data/ana/Cscd/StartingEvents/NuGen_new/NuE/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/2/l2_000010*.i3.zst"
 gfile = '/data/user/dpankova/double_pulse/GeoCalibDetectorStatus_2013.56429_V1_Modified.i3.gz'
 geofile = dataio.I3File(gfile)
-geo = 'ic86'
 file_list.append(gfile)
 
 for files in infiles:
@@ -122,18 +106,6 @@ particle_dtype = np.dtype(
 	("length", np.float32)
     ]
 ) 
-tr_veto_dtype = np.dtype(
-    [
-        ("SPE_rlogl", np.float32),
-        ("Cascade_rlogl", np.float32),
-        ("SPE_rlogl_noDC", np.float32),
-        ("Cascade_rlogl_noDC", np.float32),
-	("FirstHitZ", np.float32),
-	("VHESelfVetoVertexPosZ", np.float32),
-	("LeastDistanceToPolygon_Veto", np.float32)
-    ]
-) 
-
 weight_dtype = np.dtype(
     [
 	('PrimaryNeutrinoAzimuth',np.float32), 
@@ -189,7 +161,6 @@ info_dtype = np.dtype(
 	("daughter", particle_dtype),
 	("energies", np.float32,(10)),	
 	("pdgs", np.float32,(10)),
-	("logan_veto", tr_veto_dtype),
 	("q_tot", np.float32),
 	("cog", np.float32,(3)),
 	("q_st", np.float32),
@@ -202,7 +173,6 @@ info_dtype = np.dtype(
 )
 
 def CheckData(frame):
-#    print(frame.Has("I3EventHeader"))
     has_header = frame.Has("I3EventHeader")
     has_rawdata =  False
     if frame.Has("InIceRawData"):
@@ -233,47 +203,9 @@ def CheckData(frame):
     #print(has_header,has_weights,has_rawdata,has_mctree,has_stats,has_stream,has_pulses)
     #print(has_header and has_weights and has_rawdata and has_mctree and has_stats and has_stream and has_pulses)
     if has_header and has_weights and has_rawdata and has_mctree and has_stats and has_stream and has_pulses:
-	pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
-	
-	omkeys = pulses.keys()
-	strings_set = set()
-	string_keys = {}
- 
-    #Make a set of all hit strings and a dictinary of doms on those strings
-	for omkey in omkeys:     
-            if omkey.string not in strings_set:
-		strings_set.add(omkey.string)
-		string_keys[omkey.string] = [omkey]
-            else: 
-		string_keys[omkey.string].append(omkey)
-
-    #Caculate charge of each string	    
-        string_qs = []
-	for string, doms in string_keys.items():
-	    string_q = 0
-	    for omkey in doms:
-                qs = pulses[omkey]
-		qdom = sum(i.charge for i in qs)
-		string_q = string_q + qdom
-	    string_qs.append([string_q,string])
-
-    #sort strings by charge and find max   
-	string_qs.sort(key=lambda x: x[0], reverse = True)
-	max_q, max_st = string_qs[0]    
-	qtot = sum(i[0] for i in string_qs)
-
-
-    #MAKE Charge CUT
-#	print(max_q,qtot)
-	if (max_q <400) or (qtot <1000): 
-#	    print("CUT")
-	    return False
-
         return True
     else:
         return False
-
-
     
 def GetWaveform(frame):
     global geometry
@@ -410,7 +342,6 @@ def GetWaveform(frame):
     prim = np.zeros(1,dtype = particle_dtype)
     meson = np.zeros(1,dtype = particle_dtype)
     weight = np.zeros(1,dtype = weight_dtype)
-    veto_l = np.zeros(1,dtype = tr_veto_dtype)
 
     id[["run_id","sub_run_id","event_id","sub_event_id"]] = (H.run_id,H.sub_run_id,H.event_id,H.sub_event_id)
 
@@ -418,14 +349,8 @@ def GetWaveform(frame):
     meson[["pdg","energy","position","direction","time","length"]] = (daughter.pdg_encoding, daughter.energy,[daughter.pos.x,daughter.pos.y,daughter.pos.z],[daughter.dir.zenith,daughter.dir.azimuth],daughter.time,daughter.length)
     
     weight[list(w.keys())] = tuple(w.values())
-
-    if not frame.Has('VHESelfVetoVertexPos'):
-	frame['VHESelfVetoVertexPos'] = dataclasses.I3Position( -99999,  -99999, -99999)
-		
-    veto_l[["SPE_rlogl","Cascade_rlogl","SPE_rlogl_noDC", "Cascade_rlogl_noDC","FirstHitZ","VHESelfVetoVertexPosZ","LeastDistanceToPolygon_Veto"]] = (frame['SPEFit32_DPFitParams'].rlogl, frame['CascadeLlhVertexFit_DPParams'].ReducedLlh, frame['SPEFit32_noDC_DPFitParams'].rlogl, frame['CascadeLlhVertexFit_noDC_DPParams'].ReducedLlh, frame['depthFirstHit'].value, frame['VHESelfVetoVertexPos'].z, frame["LeastDistanceToPolygon_Veto"].value)
-    print(veto_l)
-
-    event[["id","image","neutrino","daughter","energies","pdgs","logan_veto", "q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,prim,meson,energies,pdgs,veto_l, qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
+    
+    event[["id","image","neutrino","daughter","energies","pdgs", "q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,prim,meson,energies,pdgs, qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
     
 #    print(event['daughter'],event['weight'],event['energies'],event['pdgs'])
     
@@ -437,12 +362,6 @@ def TestCuts(file_list):
     tray = I3Tray()
     tray.AddModule("I3Reader","reader", FilenameList = file_list)
     tray.AddModule(CheckData, "check-raw-data", Streams=[icetray.I3Frame.Physics])
-    tray.AddSegment(QTot.CalQTot, "selfveto-qtot", pulses='SplitInIcePulses') 
-    tray.AddSegment(Reconstruction.OfflineCascadeReco, "CscdReco", suffix="_DP", Pulses='HLCPulses')
-    tray.AddSegment(Reconstruction.MuonReco, "MuonReco", Pulses='HLCPulses')
-    tray.AddSegment(Reconstruction.OfflineCascadeReco_noDC, "CscdReco_noDC", suffix="_noDC_DP", Pulses='HLCPulses')
-    tray.AddSegment(Reconstruction.MuonReco_noDC, "MuonReco_noDC", Pulses='HLCPulses')
-    tray.AddSegment(PolygonContainment.PolygonContainment, 'polyfit', geometry = geo,RecoVertex='VHESelfVetoVertexPos',outputname='_Veto')
     tray.AddModule("I3WaveCalibrator", "calibrator")(
         ("Launches", "InIceRawData"),  # EHE burn sample IC86
         ("Waveforms", "CalibratedWaveforms"),
@@ -461,7 +380,7 @@ def TestCuts(file_list):
         )
     #tray.AddModule(CheckData, "check-data", Streams = [icetray.I3Frame.Physics])
     tray.Add(GetWaveform, "getwave", Streams=[icetray.I3Frame.Physics])
-#    tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
+ #   tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
     tray.AddModule('TrashCan','thecan')
     tray.Execute()
     tray.Finish()
@@ -470,9 +389,9 @@ def TestCuts(file_list):
 TestCuts(file_list = file_list)
 print "i3 file done"
 data = np.array(data)
-np.savez_compressed(outfile+"_data"+".npz", data)
-#mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],1))
-#mm_array[:] = data[:]
+
+mm_array = np.lib.format.open_memmap(outfile+"_data"+".npy", dtype=info_dtype, mode="w+", shape=(data.shape[0],1))
+mm_array[:] = data[:]
 print "finished", data.shape
 
 # def TestCuts(file_list):
