@@ -164,7 +164,9 @@ veto_dtype = np.dtype(
 hese_dtype = np.dtype(                                             
     [                                                                             
 	("qtot", np.float32),
-        ("vheselfveto", np.bool_),   
+        ("vheselfveto", np.bool_),
+	("vheselfvetovertexpos", np.float32,(3)),
+	("vheselfvetovertextime", np.float32),
         ("llhratio", np.float32)
     ]
 )
@@ -254,8 +256,9 @@ info_dtype = np.dtype(
         ("primary_child_energy", np.float32,(N_PRIM_CHILDREN)),
 	("primary_child_pdg", np.float32,(N_PRIM_CHILDREN)),
         ("logan_veto", veto_dtype),                                                  
-	("hese", hese_dtype),                                                  
-	("weight", weight_dtype),
+	("hese_old", hese_dtype),                                                  
+	("hese", hese_dtype),                                                                                                    
+	("weight", weight_dtype)
 
     ]
 )
@@ -436,19 +439,30 @@ def Make_Image(frame):
  
        
     #Log HESE
-    hese = np.zeros(1,dtype = hese_dtype)
+    hese = np.zeros(2,dtype = hese_dtype)
     hese_qtot = 0 
     hese_vheselfveto = True
     hese_llhratio = 0
-
-    if frame.Has("HESE_VHESelfVeto") and frame.Has("HESE_CausalQTot") and frame.Has("HESE_llhratio"):
+    hese_pos =[-9999,-9999,-9999]
+    hese_time = 99999
+    if frame.Has("HESE_VHESelfVeto"):
 	hese_qtot = frame["HESE_CausalQTot"].value
 	hese_vheselfveto = frame["HESE_VHESelfVeto"].value
 	hese_llhratio = frame["HESE_llhratio"].value
-  
-    hese[["qtot","vheselfveto","llhratio"]] = (hese_qtot,hese_vheselfveto,hese_llhratio) 
+	hese_pos = [frame["HESE_VHESelfVetoVertexPos"].x,frame["HESE_VHESelfVetoVertexPos"].y,frame["HESE_VHESelfVetoVertexPos"].z]
+	hese_time = frame["HESE_VHESelfVetoVertexTime"].value
+    hese[["qtot","vheselfveto","llhratio","vheselfvetovertexpos","vheselfvetovertextime"]][0] = (hese_qtot,hese_vheselfveto,hese_llhratio,hese_pos,hese_time) 
 
+    hese_vheselfveto = True
+    hese_pos =[-9999,-9999,-9999]
+    hese_time = 99999
+    if frame.Has("HESE2_VHESelfVeto"):
+	hese_vheselfveto = frame["HESE2_VHESelfVeto"].value
+	hese_pos = [frame["HESE2_VHESelfVetoVertexPos"].x,frame["HESE2_VHESelfVetoVertexPos"].y,frame["HESE2_VHESelfVetoVertexPos"].z]
+	hese_time = frame["HESE2_VHESelfVetoVertexTime"].value
+    hese[["qtot","vheselfveto","llhratio","vheselfvetovertexpos","vheselfvetovertextime"]][1] = (hese_qtot,hese_vheselfveto,hese_llhratio,hese_pos,hese_time) 
 
+   
     #Log logan veto
     veto = np.zeros(1,dtype = veto_dtype)
     veto_cas_rlogl = 999
@@ -516,8 +530,8 @@ def Make_Image(frame):
 
     #Log all the event info
     event = np.zeros(1,dtype = info_dtype)    
-    event[["id","image","qtot","qst","primary","prim_daughter","primary_child_energy","primary_child_pdg","logan_veto","hese","weight"]]=(id[0],im,qtot,st_info,primary[0],prim_daughter[0],energies,pdgs,veto[0],hese[0],weight[0])
-    print("aaa",event)
+    event[["id","image","qtot","qst","primary","prim_daughter","primary_child_energy","primary_child_pdg","logan_veto","hese_old","hese","weight"]]=(id[0],im,qtot,st_info,primary[0],prim_daughter[0],energies,pdgs,veto[0],hese[0],hese[1],weight[0])
+    #print("aaa",event['qtot'],event['hese1'],event['hese2'])
     data.append(event)
 
 #@icetray.traysegment
