@@ -3,16 +3,7 @@
 
 import icecube
 from I3Tray import *
-import numpy as np
-import glob
-import sys
 from icecube import icetray, dataclasses, dataio, WaveCalibrator, common_variables
-import util.Reconstruction as Reconstruction
-import util.PolygonContainment as PolygonContainment 
-import util.QTot as QTot 
-import pickle
-import argparse
-
 from icecube.recclasses import I3DipoleFitParams
 from icecube.recclasses import I3LineFitParams
 from icecube.recclasses import I3CLastFitParams
@@ -23,8 +14,17 @@ from icecube.recclasses import CramerRaoParams
 from icecube.recclasses import I3StartStopParams
 from icecube.gulliver import I3LogLikelihoodFitParams
 
-parser = argparse.ArgumentParser()
+import util.Reconstruction as Reconstruction
+import util.PolygonContainment as PolygonContainment 
+import util.QTot as QTot 
 
+import numpy as np
+import glob
+import sys
+import argparse
+
+
+parser = argparse.ArgumentParser()
 parser.add_argument("-i","--infile",
                     dest="infile",
                     type=str,
@@ -72,8 +72,9 @@ parser.add_argument("-sk","--skip_files",
 		    default =["l2_00001014", "011057.001312","011057.003278","011057.004247","011057.005703","011057.008446", "011057.004247","011057.003278","011057.005703","011057.001312","011057.003278","011057.004247","011057.005703"],
                     nargs="+",
                     help="skip files with that srting in the name")
-args = parser.parse_args()
 
+
+args = parser.parse_args()
 infiles=args.infile
 outfile=args.outfile
 gfile=args.gcdfile
@@ -82,18 +83,26 @@ data_type=args.data_type
 energy_min=args.energy_min
 energy_max=args.energy_max
 skip=args.skip
-
 print "skip", skip
-geo = 'ic86'
-c=0.299792458                                                                  
-n=1.3195
-v=c/n
-QST_THRES = 400
-QTOT_THRES = 1000
-n_prim_children = 3 #number of daughter particles to get from MCTree Primary
+
+
+#PARAMETERS
+GEO = 'ic86'
+C=0.299792458                                                                  
+N=1.3195
+V=C/N
+QST_THRES = 400 # PE, cut on max string charge
+QTOT_THRES = 1000 #PE, cut on total charge
+DIST_ST_CUT = 150**2 #m, look at string within this distance of the max string
+N_PRIM_CHILDREN = 3 #number of daughter particles to get from MCTree Primary
+
+
 #image size
-n_y_bins = 60
-n_x_bins = 300
+STRINGS_TO_SAVE = 10
+N_Y_BINS = 60
+N_X_BINS = 500
+N_CHANNELS = 3
+
 
 #ADD GCD to the start of the input filelist
 file_list = []
@@ -103,7 +112,6 @@ g_frame = geofile.pop_frame()
 geometry = g_frame["I3Geometry"].omgeo
 file_list.append(gfile)
 
-print(infiles)
 #Add input files to file list and skip bad files
 for files in infiles:
     for filename in glob.glob(files):
@@ -113,13 +121,16 @@ for files in infiles:
         if not skip_it:
             file_list.append(filename)
 
-#Final file list
-print(file_list)
-
+print(file_list) #Final file list
 
 
 #Define structured types
-
+st_info_dtype = np.dtype(
+    [                                                                                                                                        ('q', np.float32),
+        ('num', np.uint32),
+        ('dist', np.float32)
+    ]
+)
 id_dtype = np.dtype(
     [
         ("run_id", np.uint32),
@@ -139,7 +150,6 @@ particle_dtype = np.dtype(
 	("length", np.float32)
     ]
 )
-
 veto_dtype = np.dtype(                                             
     [                                                                             
 	("SPE_rlogl", np.float32),                                                      
@@ -151,7 +161,6 @@ veto_dtype = np.dtype(
 	("LeastDistanceToPolygon_Veto", np.float32)
     ]
 )
-
 hese_dtype = np.dtype(                                             
     [                                                                             
 	("qtot", np.float32),
@@ -159,9 +168,8 @@ hese_dtype = np.dtype(
         ("llhratio", np.float32)
     ]
 )
-
 if data_type =='genie':
-    weight_key = "I3MCWeightDict"
+    WEIGHT_KEY = "I3MCWeightDict"
     weight_dtype = np.dtype(
 	[
 	    ('PrimaryNeutrinoAzimuth',np.float32), 
@@ -210,7 +218,7 @@ if data_type =='genie':
 	]
     )
 else: #if data_type =='corsika'
-    weight_key = "CorsikaWeightMap"
+    WEIGHT_KEY = "CorsikaWeightMap"
     weight_dtype = np.dtype(
 	[
             ("AreaSum" ,np.float32),
@@ -235,16 +243,16 @@ else: #if data_type =='corsika'
             ("Weight",np.float32)
 	]                            
     )    
-
-
-info_dtype = np.dtype(                                                                           [
-        ("id", id_dtype),                                                                           ("image", np.float32, (300, 60)),
+info_dtype = np.dtype(
+    [
+        ("id", id_dtype),
+        ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
         ("qtot", np.float32),
-        ("qst", np.float32),
+        ("qst", st_info_dtype, N_CHANNELS),
 	("primary", particle_dtype),
         ("prim_daughter", particle_dtype),
-        ("primary_child_energy", np.float32,(n_prim_children)),
-	("primary_child_pdg", np.float32,(n_prim_children)),
+        ("primary_child_energy", np.float32,(N_PRIM_CHILDREN)),
+	("primary_child_pdg", np.float32,(N_PRIM_CHILDREN)),
         ("logan_veto", veto_dtype),                                                  
 	("hese", hese_dtype),                                                  
 	("weight", weight_dtype),
@@ -252,19 +260,14 @@ info_dtype = np.dtype(                                                          
     ]
 )
 
+
 #main data array
 data = []
 qtot = 0 #total event charge
-qst = 0 #max string charge
-nst = 0 #max string number
+st_info = np.zeros(N_CHANNELS,dtype = st_info_dtype) #[Qst, Nst, DistST] for each image
 
-#Remove events that don't have the required info or too little charge
+#Remove events that don't have the required info
 def Check_Data(frame):
-    global data 
-    global qtot
-    global qst
-    global nst
-
     #HEADER and STREAM
     has_header = frame.Has("I3EventHeader")
     has_stream = frame["I3EventHeader"].sub_event_stream != "NullSplit"
@@ -293,61 +296,84 @@ def Check_Data(frame):
             has_pulses = False
 
     has_mctree = frame.Has("I3MCTree")
-    has_weights = frame.Has(weight_key)
+    has_weights = frame.Has(WEIGHT_KEY)
 
     #Images can be made if event has all the keys, passed == True
     passed = has_header and has_weights and has_rawdata and has_mctree and has_pulses
     if passed:
-
-	if data_type == 'genie':
-	    if frame[weight_key]['InteractionType'] != it:
+	if data_type == 'genie': #Keep only events with right interaction type
+	    if frame[WEIGHT_KEY]['InteractionType'] != it:
 		return False
 
-	#Calculate charges for cuts
-        pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
-        omkeys = pulses.keys()
-        strings_set = set()
-        string_keys = {}
-
-	#Make a set of all hit strings and a dictinary of doms on those string
-	for omkey in omkeys:                                               
-            if omkey.string not in strings_set:
-                strings_set.add(omkey.string)
-                string_keys[omkey.string] = [omkey]
-	    else:
-                string_keys[omkey.string].append(omkey)
-
-	#Caculate charge of each string
-	string_qs = []
-        for string, doms in string_keys.items():
-            string_q = 0
-	    for omkey in doms:
-                qs = pulses[omkey]
-                qdom = sum(i.charge for i in qs)
-		string_q = string_q + qdom
-	    string_qs.append([string_q,string])
-        
-	#sort strings by charge and find max
-	string_qs.sort(key=lambda x: x[0], reverse = True)
-        qst, nst = string_qs[0]
-        qtot = sum(i[0] for i in string_qs)
-	
-    
-	#MAKE Charge CUT
-	if (qst < QST_THRES) or (qtot < QTOT_THRES):
-	    return False
-
-	return True
+      	return True
     else:
 	return False
 
+
+def Get_Charges(frame):
+    global qtot
+    global st_info
+
+    #Calculate charges for cuts
+    pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
+    omkeys = pulses.keys()
+    strings_set = set()
+    string_keys = {}
+
+    #Make a set of all hit strings and a dictinary of doms on those string
+    for omkey in omkeys:                                               
+        if omkey.string not in strings_set:
+            strings_set.add(omkey.string)
+            string_keys[omkey.string] = [omkey]
+	else:
+            string_keys[omkey.string].append(omkey)
+
+    #Caculate charge of each string
+    string_qs = []
+    for string, doms in string_keys.items():
+        string_q = 0
+	for omkey in doms:
+            qs = pulses[omkey]
+            qdom = sum(i.charge for i in qs)
+	    string_q = string_q + qdom
+
+	# get associated string x-y position
+        st_pos = geometry[doms[0]].position
+        st_xy = np.array([st_pos.x, st_pos.y])     
+	string_qs.append([string_q,string,st_xy])
+        
+    #sort strings by charge and find max
+    string_qs.sort(key=lambda x: x[0], reverse = True)
+    qtot = sum([i[0] for i in string_qs])
+    max_qst = string_qs[0][0] 
+
+    #MAKE Charge CUT
+    if (max_qst < QST_THRES) or (qtot < QTOT_THRES):
+	return False
+
+    # find neighboring strings and sort by charge
+    # include max charge string in this list
+    # strings 11 and 19 are neighboring but almost 150 m apart
+    
+    near_max_strings = []
+    for q, st, xy in string_qs:
+        dist_st = np.sum((string_qs[0][2]-xy)**2)
+        if dist_st < DIST_ST_CUT:
+            near_max_strings.append((q, st, dist_st))
+
+    if len(near_max_strings) < N_CHANNELS:
+	return False
+
+    for ch in range(N_CHANNELS): 
+        st_info[['q','num','dist']][ch] = (near_max_strings[ch][0],near_max_strings[ch][1],near_max_strings[ch][2])
+    
+    return True
+
 def Make_Image(frame):
     global data 
-    global qtot
-    global qst
-    global nst
     global geometry
-    
+    global st_info
+
     #Log id info 
     id = np.zeros(1,dtype = id_dtype)
     H = frame["I3EventHeader"]
@@ -356,7 +382,7 @@ def Make_Image(frame):
 
     #Log Weight info
     weight = np.zeros(1,dtype = weight_dtype)
-    w = dict(frame[weight_key])
+    w = dict(frame[WEIGHT_KEY])
     weight[list(w.keys())] = tuple(w.values())
 
     
@@ -385,22 +411,22 @@ def Make_Image(frame):
     if len(energies) == 0:
 	has_mctree = False
 	print("MCTree has no primary children")
-	energies = np.zeros(n_prim_children)
-	pdgs = np.zeros(n_prim_children)    
+	energies = np.zeros(N_PRIM_CHILDREN)
+	pdgs = np.zeros(N_PRIM_CHILDREN)    
 
     else:
 	zipped = zip(energies,pdgs,daughters)
 	zipped_sort = sorted(zipped, key = lambda x: x[0], reverse =True)
 	zipped_sort = np.array(zipped_sort)
-	energies = np.zeros(n_prim_children)
-	pdgs = np.zeros(n_prim_children)
-	   
-	if len(zipped_sort)>n_prim_children:
-	    energies = zipped_sort[:,0][:n_prim_children]
-	    pdgs = zipped_sort[:,1][:n_prim_children]
-	else:
-	    energies[:len(zipped_sort)] = zipped_sort[:,0]
-	    pdgs[:len(zipped_sort)] = zipped_sort[:,1]
+	energies = np.zeros(N_PRIM_CHILDREN)
+	pdgs = np.zeros(N_PRIM_CHILDREN)
+
+	n_to_copy = len(zipped_sort)
+	if n_to_copy > N_PRIM_CHILDREN:
+            n_to_copy = N_PRIM_CHILDREN
+
+	energies[:n_to_copy] = zipped_sort[:,0][:n_to_copy]
+	pdgs[:n_to_copy] = zipped_sort[:,1][:n_to_copy]
 
     daughter = zipped_sort[0][2]
     
@@ -449,52 +475,49 @@ def Make_Image(frame):
     #make image from raw waveforms
     pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
     wf_map = frame["CalibratedWaveformsHLCATWD"]
-    omkeys = wf_map.keys()
-    st_keys = []
-    for omkey in omkeys:
-        if (omkey.string == nst) and omkey in pulses:
-	    st_keys.append(omkey)
+    
+    # build image
+    # channel 0 is max charge string,
+    # channel 1 is max charge neighbor,
+    # channel 2 is second highest charge neighbor, etc
 
-    wfs_data = []
-    wfs_info = []
-    pos_x = []
-    pos_y = []
-    pos_z = []
-    for omkey in st_keys:
-        pos_x.append(geometry[omkey].position.x)
-        pos_y.append(geometry[omkey].position.y)
-        pos_z.append(geometry[omkey].position.z)
-        for wf in wf_map[omkey]:
-            if wf.status == 0 and wf.source_index == 0:
-                wf_data = np.array(wf.waveform)
-                wf_info = np.array([wf.time, wf.bin_width, omkey.om])
-                wfs_data.append(wf_data)
-                wfs_info.append(wf_info)
+    wfms = []
+    min_time = None
+    for img_ch, (q, stnum, dist) in enumerate(st_info):
+#        print(img_ch, (q, stnum, dist))
+        for omkey in wf_map.keys():
+	    if (omkey.string == stnum):
+		for wf in wf_map.get(omkey, []):
+                    if wf.status == 0 and wf.source_index == 0:
+			if min_time is None or wf.time < min_time:
+                            min_time = wf.time
 
-    wfs_data = np.array(wfs_data)
-    wfs_info = np.array(wfs_info)
-    #pos_st  = dataclasses.I3Position(np.mean(pos_x), np.mean(pos_y), np.mean(pos_z))
-    #dist = np.sqrt((cog.x-pos_st.x)**2+(cog.y-pos_st.y)**2+(cog.z-pos_st.z)**2)
+			wfms.append({
+				'wfm': wf.waveform,
+                                'time': wf.time,  
+                                'width': wf.bin_width,
+                                'dom_idx': omkey.om - 1,
+                                'img_ch': img_ch
+                                })
 
-    #waveform data
-    im = np.zeros(shape = (n_x_bins,n_y_bins))
-    t_min = np.min(wfs_info[:,0])
-    wfs_info = [[int((i[0]-t_min)/i[1]),int(i[2])-1] for i in wfs_info]
+ 
 
-    for i, pos in enumerate(wfs_info):
-        if pos[0] < n_x_bins and pos[0]+128 < n_x_bins:
-            im[pos[0]:pos[0]+128 ,pos[1]] = wfs_data[i][:]
-        elif pos[0] < n_x_bins:
-            im[pos[0]:,pos[1]] = wfs_data[i][:n_x_bins-pos[0]]
+    im = np.zeros(shape=(N_X_BINS, N_Y_BINS, N_CHANNELS))
 
+    for wfm in wfms:
+        start_ind = min(N_X_BINS, int((wfm['time'] - min_time) / wfm['width']))
+        end_ind = min((N_X_BINS, start_ind + len(wfm['wfm'])))
+        wfm_vals = wfm['wfm'][:end_ind - start_ind]
+        im[start_ind:end_ind, wfm['dom_idx'], wfm['img_ch']] = wfm_vals
+        
     im = np.true_divide(im, 10**(-8))
     im = im.astype(np.float32)
 
 
     #Log all the event info
     event = np.zeros(1,dtype = info_dtype)    
-    event[["id","image","qtot","qst","primary","prim_daughter","primary_child_energy","primary_child_pdg","logan_veto","hese","weight"]]=(id[0],im,qtot,qst,primary[0],prim_daughter[0],energies,pdgs,veto[0],hese[0],weight[0])
-    #print("aaa",event)
+    event[["id","image","qtot","qst","primary","prim_daughter","primary_child_energy","primary_child_pdg","logan_veto","hese","weight"]]=(id[0],im,qtot,st_info,primary[0],prim_daughter[0],energies,pdgs,veto[0],hese[0],weight[0])
+    print("aaa",event)
     data.append(event)
 
 #@icetray.traysegment
@@ -502,12 +525,13 @@ def TestCuts(file_list):
     tray = I3Tray()
     tray.AddModule("I3Reader","reader", FilenameList = file_list)
     tray.AddModule(Check_Data, "check-raw-data", Streams=[icetray.I3Frame.Physics])
+    tray.AddModule(Get_Charges, "cuts-and-secelt", Streams=[icetray.I3Frame.Physics])
     tray.AddSegment(QTot.CalQTot, "selfveto-qtot", pulses='SplitInIcePulses')
     tray.AddSegment(Reconstruction.OfflineCascadeReco, "CscdReco", suffix="_DP", Pulses='HLCPulses')
     tray.AddSegment(Reconstruction.MuonReco, "MuonReco", Pulses='HLCPulses')
     tray.AddSegment(Reconstruction.OfflineCascadeReco_noDC, "CscdReco_noDC", suffix="_noDC_DP", Pulses='HLCPulses')
     tray.AddSegment(Reconstruction.MuonReco_noDC, "MuonReco_noDC", Pulses='HLCPulses')
-    tray.AddSegment(PolygonContainment.PolygonContainment, 'polyfit', geometry = geo,RecoVertex='VHESelfVetoVertexPos',outputname='_Veto')
+    tray.AddSegment(PolygonContainment.PolygonContainment, 'polyfit', geometry = GEO,RecoVertex='VHESelfVetoVertexPos',outputname='_Veto')
     tray.AddModule("I3WaveCalibrator", "calibrator")(
         ("Launches", "InIceRawData"),  # EHE burn sample IC86
         ("Waveforms", "CalibratedWaveforms"),
@@ -527,7 +551,7 @@ def TestCuts(file_list):
     tray.Add(Make_Image, "getwave", Streams=[icetray.I3Frame.Physics])
     #tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
     tray.AddModule('TrashCan','thecan')
-    tray.Execute()
+    tray.Execute(20)
     tray.Finish()
     return
 
