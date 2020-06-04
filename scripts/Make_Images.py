@@ -14,9 +14,9 @@ from icecube.recclasses import CramerRaoParams
 from icecube.recclasses import I3StartStopParams
 from icecube.gulliver import I3LogLikelihoodFitParams
 
-import util.Reconstruction as Reconstruction
-import util.PolygonContainment as PolygonContainment 
-import util.QTot as QTot 
+import Reconstruction
+import PolygonContainment 
+import QTot 
 
 import numpy as np
 import glob
