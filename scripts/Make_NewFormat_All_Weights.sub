@@ -2,12 +2,12 @@
 
 Folder  = $(Item)
 executable = /data/user/dpankova/double_pulse/Make_NewFormat_All_Weights.py
-arguments = -p 15 -o NewFormat_NuTau_Weights_$INT(Folder) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuTau/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_*.i3.zst 
+arguments = -o NewFormat_NuE_Weights_$INT(Folder) -i /data/ana/Cscd/StartingEvents/NuGen_new/NuE/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_*.i3.zst 
 run_as_owner = True
 initialdir = /data/user/dpankova/double_pulse/
-log = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).log
-output = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).out
-error = /scratch/dpankova/double_pulse/Weights_NuTau_CC_$INT(Folder).error
+log = /scratch/dpankova/double_pulse/Weights_NuE_$INT(Folder).log
+output = /scratch/dpankova/double_pulse/Weights_NuE_$INT(Folder).out
+error = /scratch/dpankova/double_pulse/Weights_NuE_$INT(Folder).error
 should_transfer_files   = YES
 request_cpus = 1
 request_memory = 5GB                       

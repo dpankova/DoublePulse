@@ -25,11 +25,11 @@ parser.add_argument("-o","--outfile",
                     default="Ot",
                     help="base name for outfile")
 
-parser.add_argument('-p', '--meson_pdg',
-                    dest='pdg',
+parser.add_argument('-it', '--interaction_type',
+                    dest='it',
                     type=int,
-                    default=15,
-                    help='pdg number of nu: nue = 12, numu =14, nutau =16, pdg number of primary meson produced ny nu: e = 11,mu = 13,tau = 15')
+                    default=1,
+                    help='Interaction types are : CC -1, NC -2 ,GR-3')
 
 parser.add_argument('-e1', '--min_energy',
                     dest='energy_min',
@@ -53,7 +53,7 @@ args = parser.parse_args()
 
 infiles=args.infile
 outfile=args.outfile
-part_pdg=args.pdg
+it=args.it
 energy_min=args.energy_min
 energy_max=args.energy_max
 skip=args.skip
@@ -72,12 +72,13 @@ gfile = '/data/user/dpankova/double_pulse/GeoCalibDetectorStatus_2013.56429_V1_M
 geofile = dataio.I3File(gfile)
 file_list.append(gfile)
 
-for filename in infiles:
-    skip_it = False
-    for sk in skip:
-        skip_it = sk in filename
-    if not skip_it:
-	file_list.append(filename)
+for files in infiles:
+    for filename in glob.glob(files):
+        skip_it = False
+	for sk in skip:
+            skip_it = sk in filename
+	if not skip_it:
+	    file_list.append(filename)
 
 i_frame = geofile.pop_frame()
 g_frame = geofile.pop_frame()
@@ -157,7 +158,9 @@ info_dtype = np.dtype(
         ("id", id_dtype),
         ("image", np.float32, (300, 60)),
         ("neutrino", particle_dtype),
-	("meson", particle_dtype),
+	("daughter", particle_dtype),
+	("energies", np.float32,(10)),	
+	("pdgs", np.float32,(10)),
 	("q_tot", np.float32),
 	("cog", np.float32,(3)),
 	("q_st", np.float32),
@@ -184,6 +187,7 @@ def CheckData(frame):
 	    has_rawdata = False
     
     has_weights =  frame.Has("I3MCWeightDict")
+    
     has_mctree = frame.Has("I3MCTree")
     has_stats = frame.Has("CVStatistics")
     has_stream = frame["I3EventHeader"].sub_event_stream != "NullSplit"
@@ -207,6 +211,9 @@ def GetWaveform(frame):
     global geometry
     global info
     global data
+    
+    if frame['I3MCWeightDict']['InteractionType'] != it:
+	return False
 
     H = frame["I3EventHeader"]
 
@@ -216,20 +223,37 @@ def GetWaveform(frame):
     mctree = frame["I3MCTree"]                                                     
     nu = dataclasses.get_most_energetic_neutrino(mctree)
     nu_chldn = mctree.children(nu.id)
-    meson = 0
 
+   
+    energies = []
+    daughters = []
+    pdgs = []
+    
     for part in nu_chldn:
-        if abs(part.pdg_encoding) == part_pdg:
-            meson = part
+      energies.append(part.energy)
+      daughters.append(part)
+      pdgs.append(part.pdg_encoding)
 
-    if meson == 0:
-        print "No Tau"
+    if len(energies) == 0:
         return False
 
-    #MAKE Type CUT
-    #if (meson.pdg_encoding != abs(part_pdg)):
-    #	return False
+    z = zip(energies,pdgs, daughters)
+    zs = sorted(z, key = lambda x: x[0], reverse =True)
+    zs = np.array(zs)
     
+    energies = np.zeros(10) 
+    pdgs = np.zeros(10)
+
+    if len(z)>10:    
+        energies = zs[:,0][:10]
+        pdgs = zs[:,1][:10]
+    else:
+        energies[:len(zs)] = zs[:,0]                                                                                                
+	pdgs[:len(zs)] = zs[:,1]
+
+    daughter = zs[0][2]	 
+ #   print(daughter,energies, pdgs)        
+  
     H = frame["I3EventHeader"]                                                                                                      
 
     pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, 'SplitInIcePulses')
@@ -315,18 +339,20 @@ def GetWaveform(frame):
     event = np.zeros(1,dtype = info_dtype)
 
     id = np.zeros(1,dtype = id_dtype)
-    parts = np.zeros(2,dtype = particle_dtype)
+    prim = np.zeros(1,dtype = particle_dtype)
+    meson = np.zeros(1,dtype = particle_dtype)
     weight = np.zeros(1,dtype = weight_dtype)
 
     id[["run_id","sub_run_id","event_id","sub_event_id"]] = (H.run_id,H.sub_run_id,H.event_id,H.sub_event_id)
 
-    parts[["pdg","energy","position","direction","time","length"]][0] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
-    parts[["pdg","energy","position","direction","time","length"]][1] = (meson.pdg_encoding, meson.energy,[meson.pos.x,meson.pos.y,meson.pos.z],[meson.dir.zenith,meson.dir.azimuth],meson.time,meson.length)
+    prim[["pdg","energy","position","direction","time","length"]] = (nu.pdg_encoding, nu.energy,[nu.pos.x,nu.pos.y,nu.pos.z],[nu.dir.zenith,nu.dir.azimuth],nu.time, nu.length)
+    meson[["pdg","energy","position","direction","time","length"]] = (daughter.pdg_encoding, daughter.energy,[daughter.pos.x,daughter.pos.y,daughter.pos.z],[daughter.dir.zenith,daughter.dir.azimuth],daughter.time,daughter.length)
     
     weight[list(w.keys())] = tuple(w.values())
     
-    event[["id","image","neutrino","meson","q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,parts[0],parts[1],qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
-   
+    event[["id","image","neutrino","daughter","energies","pdgs", "q_tot","cog","q_st","st_pos","st_num","distance", "weight"]]=(id[0],im,prim,meson,energies,pdgs, qtot,[cog.x,cog.y,cog.z], max_q, [pos_st.x,pos_st.y,pos_st.z],max_st,dist,weight[0])
+    
+#    print(event['daughter'],event['weight'],event['energies'],event['pdgs'])
     
     data.append(event)
 

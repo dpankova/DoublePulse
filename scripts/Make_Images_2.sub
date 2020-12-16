@@ -1,0 +1,22 @@
+#Make images
+
+Folder  = $(Item)
+FolderPad = $(Item) - 1
+Num = $(Step)
+Type = NuE
+It = 1
+Sim = genie
+
+executable = /data/user/dpankova/double_pulse/Make_Images.py
+arguments = -it $INT(It) -o Images_$(Type)_$INT(It)_$INT(Folder)_$INT(Num) -i /data/ana/Cscd/StartingEvents/NuGen_new/$(Type)/medium_energy/IC86_flasher_p1=0.3_p2=0.0/l2/$INT(Folder)/l2_000$INT(FolderPad,%02d)$INT(Num,%02d)*.i3.zst -gcd /data/sim/IceCube/2012/filtered/level2/CORSIKA-in-ice/11057/01000-01999/GeoCalibDetectorStatus_2012.56063_V1.i3.gz -t $(Sim)
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/Make_Images_$(Type)_$INT(It)_$INT(Folder)_$INT(Num).log
+output = /scratch/dpankova/double_pulse/Make_Images_$(Type)_$INT(It)_$INT(Folder)_$INT(Num).out
+error = /scratch/dpankova/double_pulse/Make_Images_$(Type)_$INT(It)_$INT(Folder)_$INT(Num).error
+should_transfer_files   = YES
+transfer_input_files = /data/user/dpankova/double_pulse/Reconstruction.py, /data/user/dpankova/double_pulse/QTot.py, /data/user/dpankova/double_pulse/PolygonContainment.py
+request_cpus = 1
+request_memory = 8GB                       
+request_disk = 1GB 
+queue 100 in (1,2,3,4,5,6,7,8,9,10,11,12,13)
