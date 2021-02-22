@@ -52,7 +52,7 @@ def build_and_train_model_2class_vars(n_training,
     print('\nLoading raw data...\n')
     start = time.time()
     dataset, unconsumed_files = load_dataset_2class_vars(e_file_list, tau_file_list,
-                                             n_training, n_validation,(500, 60, 3),(1,7),
+                                             n_training, n_validation,(500, 60, 3),(1,1),
                                              get_weights=use_weights,
                                              spectral_index=spectral_index,
                                              weight_type=weight_type,verbose=True)
@@ -78,10 +78,10 @@ def build_and_train_model_2class_vars(n_training,
     nvars = dataset[0][1].shape[-1]
     #print(nvars)
     mean_vars, std_vars = np.zeros(nvars),np.zeros(nvars)
-    clim= {0:[0,2000],1:[0,400],2:[5,17],3:[5,17],4:[400,200000],5:[0,8000],6:[100,8000]}
+    #clim= {0:[0,2000],1:[0,400],2:[5,17],3:[5,17],4:[400,200000],5:[0,8000],6:[100,8000]}
     for nvar in range(nvars):
-        dataset[0][1][:,0,nvar] = np.clip(dataset[0][1][:,0,nvar],clim[nvar][0],clim[nvar][1])
-        dataset[1][1][:,0,nvar] = np.clip(dataset[1][1][:,0,nvar],clim[nvar][0],clim[nvar][1])
+        #dataset[0][1][:,0,nvar] = np.clip(dataset[0][1][:,0,nvar],clim[nvar][0],clim[nvar][1])
+        #dataset[1][1][:,0,nvar] = np.clip(dataset[1][1][:,0,nvar],clim[nvar][0],clim[nvar][1])
         mean_vars[nvar] = np.mean(dataset[0][1][:,0,nvar])   
         std_vars[nvar] = np.std(dataset[0][1][:,0,nvar])
         dataset[0][1][:,0,nvar] = (dataset[0][1][:,0,nvar] - mean_vars[nvar])/std_vars[nvar]

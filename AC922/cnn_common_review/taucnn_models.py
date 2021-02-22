@@ -223,7 +223,7 @@ def CNN_vgg16_vars(n_channels=3):
 
     channels = [Input(shape=(500, 60, 1)) for _ in range(n_channels)]
     cnn_stages = [CNN_layers(channel) for channel in channels]
-    exvars = Input(shape=(7))
+    exvars = Input(shape=(1))
     cnn_outputs = concatenate(cnn_stages)
     all_outputs = concatenate([cnn_outputs,exvars])
 
@@ -233,6 +233,68 @@ def CNN_vgg16_vars(n_channels=3):
     dense_layers.add(Dense(units=1, activation='sigmoid'))
 
     output = dense_layers(all_outputs)
+    return Model(inputs=[channels]+[exvars], outputs=output)
+
+def CNN_vgg16_vars_mid(n_channels=3): 
+    CNN_layers = Sequential(name='convolutional_layers')
+    CNN_layers.add(ZeroPadding2D((1,1),input_shape=(500, 60, 1)))
+    CNN_layers.add(Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=128, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=128, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=256, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=256, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=256, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+    
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(ZeroPadding2D((1,1)))
+    CNN_layers.add(Conv2D(filters=512, kernel_size=(3, 3), activation='relu'))
+    CNN_layers.add(MaxPooling2D(pool_size=(2, 2), strides=(2,2)))
+    CNN_layers.add(Flatten())
+
+    channels = [Input(shape=(500, 60, 1)) for _ in range(n_channels)]
+    cnn_stages = [CNN_layers(channel) for channel in channels]
+    cnn_outputs = concatenate(cnn_stages)
+    
+    dense_layers1 = Sequential(name='dense_layers1')
+    dense_layers1.add(Dense(units=256, use_bias=False))
+    dense_layers1.add(Dense(units=128, use_bias=False))
+    dense_layers1.add(Dense(units=64, use_bias=False))
+
+    dense_output1 = dense_layers1(cnn_outputs)
+    
+    exvars = Input(shape=(1))
+    all_outputs = concatenate([dense_output1,exvars])
+
+    dense_layers2 = Sequential(name='dense_layers2')
+    dense_layers2.add(Dense(units=32, use_bias=False))
+    dense_layers2.add(Dense(units=16, use_bias=False))
+    dense_layers2.add(Dense(units=1, activation='sigmoid'))
+
+    output = dense_layers2(all_outputs)
+   
     return Model(inputs=[channels]+[exvars], outputs=output)
 
 
