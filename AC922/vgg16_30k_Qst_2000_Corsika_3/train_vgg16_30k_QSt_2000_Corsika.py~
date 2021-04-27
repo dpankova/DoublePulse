@@ -16,22 +16,22 @@ from glob import glob
 
 
 sys.path.append('../')
-from cnn_common.build_and_train import build_and_train_model_2class
-from cnn_common.taucnn_models import three_chan_adapter, CNN_vgg16
+from cnn_common_review.build_and_train import build_and_train_model_2class
+from cnn_common_review.taucnn_models import three_chan_adapter, CNN_vgg16
 
-model_name = 'vgg16_700k_QSt2000_dataset_norm_MuVsTau_3'
+model_name = 'vgg16_30k_QSt2000_corsika_3'
 
 training_conf = {
-    'n_training' : 350000,
-    'n_validation': 35000,
+    'n_training' : 25000,
+    'n_validation': 5000,
     'initial_rate': 0.01,
-    'momentum': 0.9,
+    'momentum': 0.8,
     'n_epochs': 100,
     'patience': 10,
     'norm_mode': 'whole_dataset',
-    'batch_size': 256,
+    'batch_size': 64,
     'validation_files_per_flavor': [1, 3],
-    'e_file_list': glob('/gpfs/summit/home/dup193/TauCNN/images/charge_numu/Images_NuMu*'),
+    'e_file_list': glob('/gpfs/summit/home/dup193/TauCNN/images/Qst2000_Corsika/Im*'),
     'tau_file_list': glob('/gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTau*'),
     'model_factory': CNN_vgg16,
     'optimizer': 'sgd',	
