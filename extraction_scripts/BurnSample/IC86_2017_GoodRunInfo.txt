@@ -1,0 +1,15 @@
+RunNum  Good_i3  Good_it  LiveTime(s) ActiveStrings   ActiveDoms     ActiveInIce        OutDir                                                  Comment(s)
+         (1=good 0=bad)  
+129550     1        1        28805.41           86          5393         5050          /data/exp/IceCube/2017/filtered/level2pass2a/0526/Run00129550/    
+129600     1        1        28809.64           86          5393         5050          /data/exp/IceCube/2017/filtered/level2pass2a/0607/Run00129600/    
+129650     1        1        28807.24           86          5391         5048          /data/exp/IceCube/2017/filtered/level2pass2a/0619/Run00129650/    
+129700     1        1        28807.22           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0703/Run00129700/    
+129750     1        1        28763.58           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0712/Run00129750/    
+129800     1        1        28808.71           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0723/Run00129800/    
+129950     1        1        28807.86           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0830/Run00129950/    
+130000     1        1        28808.63           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0912/Run00130000/    
+130050     1        1        28733.36           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/0924/Run00130050/    
+130150     1        1        28808.06           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/1022/Run00130150/    
+130200     1        1        16119.41           86          5391         5048          /data/exp/IceCube/2017/filtered/level2pass2a/1104/Run00130200/    
+130250     1        1        28725.11           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/1116/Run00130250/    
+130350     1        1        28759.91           86          5392         5049          /data/exp/IceCube/2017/filtered/level2pass2a/1205/Run00130350/    

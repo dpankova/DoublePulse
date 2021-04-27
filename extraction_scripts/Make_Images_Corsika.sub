@@ -1,0 +1,20 @@
+#Make images
+
+Fold  = $(folder)
+Num = $(number)
+Sim = corsika
+Dataset = $(dset)
+
+executable = /data/user/dpankova/double_pulse/Make_Images.py
+arguments = -o /data/user/dpankova/double_pulse/images/Corsika_$(Dataset)_100x/Images_Corsika_$(Dataset)_$INT(Fold,%02d)000_$INT(Fold,%02d)999_$INT(Num,%02d) -i  /data/sim/IceCube/2016/filtered/level2/CORSIKA-in-ice/$(Dataset)/00$INT(Fold,%02d)000-00$INT(Fold,%02d)999/Level2_IC86.2016_corsika.0$(Dataset).$INT(Fold,%03d)$INT(Num,%02d)*.i3.zst  -gcd /cvmfs/icecube.opensciencegrid.org/data/GCD/GeoCalibDetectorStatus_AVG_55697-57531_PASS2_SPE_withStdNoise.i3.gz -t $(Sim) -set $(Dataset) -y 2016 
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/Make_Images_Corsika_$(Dataset)_$INT(Fold,%02d)_$INT(Num,%02d).log
+output = /scratch/dpankova/double_pulse/Make_Images_Corsika_$(Dataset)_$INT(Fold,%02d)_$INT(Num,%02d).out
+error = /scratch/dpankova/double_pulse/Make_Images_Corsika_$(Dataset)_$INT(Fold,%02d)_$INT(Num,%02d).error
+should_transfer_files   = YES
+transfer_input_files = /data/user/dpankova/double_pulse/Reconstruction.py, /data/user/dpankova/double_pulse/QTot.py, /data/user/dpankova/double_pulse/PolygonContainment.py
+request_cpus = 1
+request_memory = 1GB                       
+request_disk = 0.1GB 
+queue 
