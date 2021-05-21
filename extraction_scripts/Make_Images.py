@@ -4,13 +4,14 @@
 
 import icecube
 from I3Tray import *
-from icecube import icetray, dataclasses, dataio, WaveCalibrator
+from icecube import icetray, dataclasses, dataio, WaveCalibrator, wavereform, MuonGun
 from icecube.recclasses import I3LineFitParams
 from icecube.recclasses import I3CscdLlhFitParams
 from icecube.recclasses import I3TensorOfInertiaFitParams
 from icecube.gulliver import I3LogLikelihoodFitParams
 from icecube.weighting.fluxes import GaisserH4a
 from icecube.icetray import I3Units
+from icecube.dataclasses import I3Waveform
 icetray.set_log_level(icetray.I3LogLevel.LOG_FATAL)
 #icetray.set_log_level(icetray.I3LogLevel.LOG_INFO)
 #vars
@@ -364,9 +365,11 @@ elif data_type == 'muongun':
     MCTREE_KEY = 'I3MCTree_preMuonProp'
     weight_dtype = np.dtype(
         [
-	    ('ThisisMuonGun',np.float32),
+	    ('ThisisData',np.float32),
         ]
     )  
+
+
 else: #data
     WEIGHT_KEY = 'None'
     PULSES_KEY = 'SplitInIcePulses'
@@ -378,20 +381,85 @@ else: #data
     )  
 
 #Output data format	    
-info_dtype = np.dtype(
-    [
-        ("id", id_dtype),
-        ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
-        ("qtot", np.float32),
-        ("qst", st_info_dtype, N_CHANNELS),
-        ("primary", particle_dtype),
-        ("prim_daughter", particle_dtype),
-        ("logan_veto", veto_dtype),                                                  
-        ("hese", hese_dtype),
-        ("weight_dict", weight_dtype),        
-    ]
-)
+if data_type == 'muongun':
+    info_dtype = np.dtype(
+	[
+            ("id", id_dtype),
+            ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
+            ("qtot", np.float32),
+            ("qst", st_info_dtype, N_CHANNELS),
+            ("primary", particle_dtype),
+            ("prim_daughter", particle_dtype),
+            ("logan_veto", veto_dtype),                                                  
+            ("hese", hese_dtype),
+            ("weight_val", np.float32),        
+	]
+    )
+     
+else:
+    info_dtype = np.dtype(
+	[
+            ("id", id_dtype),
+            ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
+            ("qtot", np.float32),
+            ("qst", st_info_dtype, N_CHANNELS),
+            ("primary", particle_dtype),
+            ("prim_daughter", particle_dtype),
+            ("logan_veto", veto_dtype),                                                  
+            ("hese", hese_dtype),
+            ("weight_dict", weight_dtype),        
+	]
+    )
 
+
+def effective_area(frame, model, generator):
+    mctree = frame["I3MCTree"]
+    primary = mctree.primaries[0]
+    muon = mctree.get_daughters(primary)[0]
+    bundle = MuonGun.BundleConfiguration(
+      [MuonGun.BundleEntry(0, muon.energy)])
+    area = 1/generator.generated_events(primary, bundle)
+    frame["MCMuon"] = muon
+    frame["MuonEffectiveArea"] = dataclasses.I3Double(area)
+    weighter = MuonGun.WeightCalculator(model, generator)
+    weight  = weighter(primary,bundle)
+    frame["MuonWeight"] = dataclasses.I3Double(weight)
+    return True
+
+def I3MCTpmp_2_I3MCT(frame):
+    frame["I3MCTree"]=frame['I3MCTree_preMuonProp']
+
+def harvest_generators(infiles):
+    generator = None
+    for fname in infiles:
+        f = dataio.I3File(fname)
+        fr = f.pop_frame(icetray.I3Frame.Stream('S'))
+        f.close()
+        if fr is not None:
+            for k in fr.keys():
+                if("I3TriggerHierarchy" in k): continue #hack due to I3TriggerHierchy bug
+                v = fr[k]
+                if isinstance(v, MuonGun.GenerationProbability):
+                    print ("found MG GP")
+                    if generator is None:
+                        generator = v
+                    else:
+                        generator += v
+    return generator
+
+if data_type == 'muongun':
+    muongun_nfiles={21317:9996,21316:9999,21315:15000}
+    generator_set1_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21315/0000000-0000999/*.i3.zst")
+    generator_set1=harvest_generators([generator_set1_infile[0]]); infiles_set1 = muongun_nfiles[21315]
+    generator_set2_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21316/0000000-0000999/*.i3.zst")
+    generator_set2=harvest_generators([generator_set2_infile[0]]); infiles_set2 = muongun_nfiles[21316]
+    generator_set3_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21317/0000000-0000999/*.i3.zst")
+    generator_set3=harvest_generators([generator_set3_infile[0]]); infiles_set3 = muongun_nfiles[21317]
+    mg_generator=((infiles_set1*generator_set1) +
+               (infiles_set2*generator_set2) +
+               (infiles_set3*generator_set3))
+    mg_model = MuonGun.load_model('GaisserH4a_atmod12_SIBYLL')
+    
 #Skip events that don't have the required info
 def Check_Data(frame):
     #HEADER and STREAM
@@ -441,7 +509,7 @@ def Check_Data(frame):
 
         return True
     else:
-#       print("Not PASSES", has_header,has_weights,has_rawdata,has_mctree,has_pulses)
+#        print("Not PASSES", has_header,has_weights,has_rawdata,has_mctree,has_pulses)
         return False
 
 
@@ -469,7 +537,7 @@ def Get_Charges(frame):
         string_q = 0
         for omkey in doms:
             qs = pulses[omkey]
-            qdom = sum(i.charge for i in qs)
+            qdom = sum([i.charge for i in qs])
             string_q = string_q + qdom
 
         # get associated string x-y position
@@ -484,7 +552,7 @@ def Get_Charges(frame):
 
     #MAKE Charge CUT
     if (max_qst < QST_THRES) or (qtot < QTOT_THRES):
-#        print("FAILED CHARGE CUT ", max_qst, qtot)
+ #       print("FAILED CHARGE CUT ", max_qst, qtot)
         return False
     
     # find neighboring strings and sort by charge
@@ -518,7 +586,7 @@ def LLH_cut(frame):
 
     #make llh cut
     if llhcut < LLH_THRES:
-        print("Failed LLH cut = ",llhcut)
+ #       print("Failed LLH cut = ",llhcut)
         return False
     else:
         print("Passed LLH cut = ",llhcut)
@@ -618,8 +686,8 @@ def Make_Image(frame):
         veto_fh_z = frame['depthFirstHit'].value
         veto_svv_z = frame['HESE3_VHESelfVetoVertexPos'].z
         veto_ldp = frame["LeastDistanceToPolygon_Veto"].value
-        trck = frame['CascadeLlhVertexFit_DP']
-        cscd = frame['SPEFit32_DP']
+        #trck = frame['CascadeLlhVertexFit_DP']
+        #cscd = frame['SPEFit32_DP']
     
     veto[["SPE_rlogl","Cascade_rlogl","SPE_rlogl_noDC", "Cascade_rlogl_noDC","FirstHitZ","VHESelfVetoVertexPosZ","LeastDistanceToPolygon_Veto"]] =\
     (veto_spe_rlogl,veto_cas_rlogl,veto_spe_rlogl_ndc,veto_cas_rlogl_ndc,veto_fh_z,veto_svv_z,veto_ldp)                     
@@ -629,17 +697,13 @@ def Make_Image(frame):
 
     #make image from raw waveforms 
     wfms = []
-    wf_times = [] #storage for waveforms starting times
-    wf_widths = [] #storage for waveform bin widths
     
     for img_ch, (q, stnum, dist) in enumerate(st_info):
         for omkey in wf_map.keys():
             if (omkey.string == stnum):
                 for wf in wf_map.get(omkey, []):
-                    if wf.status == 0 and wf.source_index == 0:
-			wf_times.append(wf.time)
-                        wf_widths.append(wf.bin_width)
-                        wfms.append({
+                    if wf.status == 0: #and wf.source_index == 0:
+			wfms.append({
                                 'wfm': wf.waveform,
                                 'time': wf.time,  
                                 'width': wf.bin_width,
@@ -653,17 +717,54 @@ def Make_Image(frame):
     wf_times_arr = np.zeros(shape=(N_Y_BINS, N_CHANNELS))
     wf_pos_arr = np.zeros(shape=(3,N_Y_BINS, N_CHANNELS))
     
+    if data_type == 'data':
+	save = []
+	calib = frame['I3Calibration']
+	status = frame['I3DetectorStatus']
+	width = 3.33334
+	for om, ps in pulses.items():
 
-    if len(wfms) <= 4:
+	    if not om.string in st_info['num']:
+                continue
+
+            if om in wf_map:
+                has_good_wf = False
+                for wf in wf_map.get(om, []):
+                    if wf.status == 0:
+                        has_good_wf = True
+                if has_good_wf:
+                    continue
+
+
+            chl = np.where(st_info['num'] == om.string)
+            p_time = np.min([i.time for i in ps])
+            min_time = p_time - width*15
+            max_time = p_time + width*112
+            times = np.linspace(min_time, max_time, 128)
+
+            cal = calib.dom_cal[om]
+            stat = status.dom_status[om]
+            wf_vals=wavereform.refold_pulses(ps, I3Waveform.ATWD, 0, cal, stat, times, False)
+	    wfms.append({
+		    'wfm': wf_vals,
+		    'time': min_time,  
+		    'width': width,
+		    'dom_idx': om.om - 1,
+		    'img_ch': chl[0][0],
+		    'om_pos': [geometry[om].position.x,geometry[om].position.y,geometry[om].position.z]
+		    })
+
+    
+    if len(wfms) < 2:
         print("FAILED only %d WF" %len(wfms) )
         return False
-    
+
     #we neeed to prevent early noise hits from shifting the actual
     #interaction from the image time frame
     #first work out when the first waveforn starts
-    wf_times = np.array(wf_times)
+    wf_times = np.array([wf['time'] for wf in wfms])
     wf_times = wf_times[wf_times.argsort()]
-
+  
     #find the biggest differnece between starting times
     diff_times = np.diff(wf_times[:N_NOISE_HITS])
     max_diff_pos = np.argmax(diff_times)
@@ -675,7 +776,7 @@ def Make_Image(frame):
         min_time = wf_times[0]
 
     
-
+    
     #make images
     for wfm in wfms:
         wf_shift = 0
@@ -690,7 +791,6 @@ def Make_Image(frame):
             if end_ind <0:
                 end_ind = 0
             wfm_vals = wfm['wfm'][wf_shift:len(wfm['wfm'])]
-
         im[start_ind:end_ind, wfm['dom_idx'], wfm['img_ch']] = wfm_vals
         wf_times_arr[wfm['dom_idx'], wfm['img_ch']] = wfm['time']
         wf_pos_arr[0:3,wfm['dom_idx'], wfm['img_ch']] = wfm['om_pos']
@@ -711,11 +811,17 @@ def Make_Image(frame):
     if np.sum(im[:,:,2])==0:
         print("FAILED no image 2")
         return False
-    
-    #Log all the event info    
+   
     event = np.zeros(1,dtype = info_dtype)    
-    event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_dict"]]=\
+    #Log all the event info
+    if data_type == 'muongun':
+       	w = frame['MuonWeight'].value
+	event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_val"]]=\
+           (id[0], im, qtot, st_info, primary[0], prim_daughter[0], veto[0],hese[0], w)
+    else:
+	event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_dict"]]=\
            (id[0], im, qtot, st_info, primary[0], prim_daughter[0], veto[0],hese[0], weight[0])
+#    print(event['weight_val'])
     data.append(event)
     
 #@icetray.traysegment
@@ -748,6 +854,9 @@ def TestCuts(file_list):
         ("PickUnsaturatedATWD",True),
         ("Force",True),
         )
+    #uncomment Next two for muongun
+    #tray.Add(I3MCTpmp_2_I3MCT,Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
+    #tray.Add(effective_area,model=mg_model,generator=mg_generator,Streams=[icetray.I3Frame.Physics])
     tray.Add(Make_Image, "getwave", Streams=[icetray.I3Frame.Physics])
 #    tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
     tray.AddModule('TrashCan','thecan')

@@ -16,7 +16,7 @@ from glob import glob
 
 
 sys.path.append('../')
-from cnn_common.build_and_train import build_and_train_model_2class
+from cnn_common.build_and_train import build_and_train_model
 from cnn_common.taucnn_models import three_chan_adapter, CNN_vgg16
 
 model_name = 'vgg16_200k_QSt2000_dataset_norm_2'
@@ -49,7 +49,7 @@ def scheduler(epoch):
 training_conf['scheduler'] = scheduler
     
 def main():        
-    model = build_and_train_model_2class(**training_conf)
+    model = build_and_train_model(**training_conf)
     
     model.save(f'{model_name}.h5')
 
