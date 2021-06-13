@@ -5,6 +5,8 @@ Training Networks\
 ./cnn_common_original/ - original Aaron's code for Network training\
 \
 ./cnn_common/ - most recent version of Aaron's code\
+`taucnn_models.py` contains the model architectures.\
+\
 \
 vgg16_200k_Qst_2000_2/ - NET1 NuE vs NuTau Network\
 vgg16_700k_Qst_2000_MuvsTau_3/ - NET3 NuMu vs NuTau Network\
