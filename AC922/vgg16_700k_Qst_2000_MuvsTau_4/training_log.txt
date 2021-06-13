@@ -1,0 +1,309 @@
+2020-05-19 18:09:17.758075: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.2
+2020-05-19 18:09:19.883644: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libnvinfer.so.7
+2020-05-19 18:09:19.889811: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libnvinfer_plugin.so.7
+2020-05-19 18:09:24.106643: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcuda.so.1
+2020-05-19 18:09:24.233356: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 0 with properties: 
+pciBusID: 0004:04:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.235609: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 1 with properties: 
+pciBusID: 0004:05:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.237768: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 2 with properties: 
+pciBusID: 0035:03:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.239898: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 3 with properties: 
+pciBusID: 0035:04:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.239933: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.2
+2020-05-19 18:09:24.240000: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-05-19 18:09:24.259014: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-05-19 18:09:24.274670: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-05-19 18:09:24.299184: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-05-19 18:09:24.313471: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-05-19 18:09:24.313532: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-05-19 18:09:24.330333: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1700] Adding visible gpu devices: 0, 1, 2, 3
+2020-05-19 18:09:24.361305: I tensorflow/core/platform/profile_utils/cpu_utils.cc:101] CPU Frequency: 3683000000 Hz
+2020-05-19 18:09:24.369229: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x16edb9090 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2020-05-19 18:09:24.369429: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2020-05-19 18:09:24.628255: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x16cd2f260 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+2020-05-19 18:09:24.628453: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Tesla V100-SXM2-32GB, Compute Capability 7.0
+2020-05-19 18:09:24.628477: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (1): Tesla V100-SXM2-32GB, Compute Capability 7.0
+2020-05-19 18:09:24.628499: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (2): Tesla V100-SXM2-32GB, Compute Capability 7.0
+2020-05-19 18:09:24.630337: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (3): Tesla V100-SXM2-32GB, Compute Capability 7.0
+2020-05-19 18:09:24.632951: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 0 with properties: 
+pciBusID: 0004:04:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.635046: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 1 with properties: 
+pciBusID: 0004:05:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.637145: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 2 with properties: 
+pciBusID: 0035:03:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.639238: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1558] Found device 3 with properties: 
+pciBusID: 0035:04:00.0 name: Tesla V100-SXM2-32GB computeCapability: 7.0
+coreClock: 1.53GHz coreCount: 80 deviceMemorySize: 31.50GiB deviceMemoryBandwidth: 836.37GiB/s
+2020-05-19 18:09:24.639280: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.2
+2020-05-19 18:09:24.639312: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-05-19 18:09:24.639353: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-05-19 18:09:24.639387: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-05-19 18:09:24.639422: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-05-19 18:09:24.639456: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-05-19 18:09:24.639486: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-05-19 18:09:24.656180: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1700] Adding visible gpu devices: 0, 1, 2, 3
+2020-05-19 18:09:24.656236: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.2
+2020-05-19 18:09:27.128838: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1099] Device interconnect StreamExecutor with strength 1 edge matrix:
+2020-05-19 18:09:27.129021: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1105]      0 1 2 3 
+2020-05-19 18:09:27.129047: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1118] 0:   N Y Y Y 
+2020-05-19 18:09:27.129068: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1118] 1:   Y N Y Y 
+2020-05-19 18:09:27.129089: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1118] 2:   Y Y N Y 
+2020-05-19 18:09:27.129108: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1118] 3:   Y Y Y N 
+2020-05-19 18:09:27.140525: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1244] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 30316 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2020-05-19 18:09:27.143919: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1244] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:1 with 30316 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-32GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2020-05-19 18:09:27.147126: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1244] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:2 with 30316 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-32GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2020-05-19 18:09:27.150395: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1244] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:3 with 30316 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-32GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2020-05-19 18:26:58.231653: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-05-19 18:26:58.661223: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+
+building the model...
+
+Model: "model"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to                     
+==================================================================================================
+input_1 (InputLayer)            [(None, 500, 60, 1)] 0                                            
+__________________________________________________________________________________________________
+input_2 (InputLayer)            [(None, 500, 60, 1)] 0                                            
+__________________________________________________________________________________________________
+input_3 (InputLayer)            [(None, 500, 60, 1)] 0                                            
+__________________________________________________________________________________________________
+convolutional_layers (Sequentia (None, 7680)         14713536    input_1[0][0]                    
+                                                                 input_2[0][0]                    
+                                                                 input_3[0][0]                    
+__________________________________________________________________________________________________
+concatenate (Concatenate)       (None, 23040)        0           convolutional_layers[1][0]       
+                                                                 convolutional_layers[2][0]       
+                                                                 convolutional_layers[3][0]       
+__________________________________________________________________________________________________
+dense_layers (Sequential)       (None, 1)            2957953     concatenate[0][0]                
+==================================================================================================
+Total params: 17,671,489
+Trainable params: 17,671,105
+Non-trainable params: 384
+__________________________________________________________________________________________________
+
+Loading raw data...
+
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_9_9_data.npz
+view shape: (200000, 500, 60, 3)
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_8_8_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_6_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_6_0_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_6_1_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_5_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_7_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_6_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_9_8_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_8_data.npz
+view shape: (200000, 500, 60, 3)
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_0_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_8_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_4_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_1_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_9_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_4_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_4_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_0_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_8_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_6_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_9_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_6_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_1_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_9_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_5_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_5_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_7_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_9_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_7_1_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_4_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_2_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_7_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_5_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_3_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_7_6_data.npz
+view shape: (20000, 500, 60, 3)
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_5_0_data.npz
+view shape: (20000, 500, 60, 3)
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_8_8_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_1_data.npz
+reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_4_1_data.npz
+loading raw data took 705.0 seconds
+
+Normalizing...
+
+normalization took 156.7 seconds
+
+Training...
+
+Using SGD
+Beginning learning rate scheduled training:
+Train on 400000 samples, validate on 40000 samples
+Epoch 1/100
+
+Learning rate for epoch 1 is 0.009999999776482582
+400000/400000 - 1071s - loss: 0.6359 - accuracy: 0.6336 - val_loss: 0.8149 - val_accuracy: 0.5172
+Epoch 2/100
+
+Learning rate for epoch 2 is 0.009999999776482582
+400000/400000 - 1003s - loss: 0.6066 - accuracy: 0.6640 - val_loss: 0.6414 - val_accuracy: 0.6299
+Epoch 3/100
+
+Learning rate for epoch 3 is 0.009999999776482582
+400000/400000 - 1003s - loss: 0.5886 - accuracy: 0.6772 - val_loss: 0.7851 - val_accuracy: 0.5739
+Epoch 4/100
+
+Learning rate for epoch 4 is 0.009999999776482582
+400000/400000 - 1005s - loss: 0.5748 - accuracy: 0.6882 - val_loss: 0.5803 - val_accuracy: 0.6689
+Epoch 5/100
+
+Learning rate for epoch 5 is 0.009999999776482582
+400000/400000 - 1005s - loss: 0.5629 - accuracy: 0.6973 - val_loss: 0.5844 - val_accuracy: 0.6791
+Epoch 6/100
+
+Learning rate for epoch 6 is 0.009999999776482582
+400000/400000 - 1008s - loss: 0.5527 - accuracy: 0.7052 - val_loss: 0.6240 - val_accuracy: 0.6359
+Epoch 7/100
+
+Learning rate for epoch 7 is 0.009512294083833694
+400000/400000 - 1008s - loss: 0.5436 - accuracy: 0.7104 - val_loss: 0.5285 - val_accuracy: 0.7210
+Epoch 8/100
+
+Learning rate for epoch 8 is 0.009048373438417912
+400000/400000 - 1005s - loss: 0.5354 - accuracy: 0.7167 - val_loss: 0.5680 - val_accuracy: 0.6740
+Epoch 9/100
+
+Learning rate for epoch 9 is 0.008607079274952412
+400000/400000 - 1004s - loss: 0.5291 - accuracy: 0.7212 - val_loss: 0.5361 - val_accuracy: 0.7088
+Epoch 10/100
+
+Learning rate for epoch 10 is 0.008187307976186275
+400000/400000 - 1005s - loss: 0.5228 - accuracy: 0.7268 - val_loss: 0.5197 - val_accuracy: 0.7281
+Epoch 11/100
+
+Learning rate for epoch 11 is 0.007788007613271475
+400000/400000 - 1005s - loss: 0.5170 - accuracy: 0.7307 - val_loss: 0.5353 - val_accuracy: 0.7165
+Epoch 12/100
+
+Learning rate for epoch 12 is 0.007408181205391884
+400000/400000 - 1005s - loss: 0.5109 - accuracy: 0.7345 - val_loss: 0.5604 - val_accuracy: 0.7006
+Epoch 13/100
+
+Learning rate for epoch 13 is 0.007046880666166544
+400000/400000 - 1005s - loss: 0.5062 - accuracy: 0.7377 - val_loss: 0.5247 - val_accuracy: 0.7222
+Epoch 14/100
+
+Learning rate for epoch 14 is 0.006703200284391642
+400000/400000 - 1004s - loss: 0.5005 - accuracy: 0.7424 - val_loss: 0.5360 - val_accuracy: 0.7056
+Epoch 15/100
+
+Learning rate for epoch 15 is 0.006376281380653381
+400000/400000 - 1005s - loss: 0.4960 - accuracy: 0.7452 - val_loss: 0.5163 - val_accuracy: 0.7286
+Epoch 16/100
+
+Learning rate for epoch 16 is 0.006065306719392538
+400000/400000 - 1005s - loss: 0.4914 - accuracy: 0.7484 - val_loss: 0.5223 - val_accuracy: 0.7216
+Epoch 17/100
+
+Learning rate for epoch 17 is 0.005769497714936733
+400000/400000 - 1005s - loss: 0.4859 - accuracy: 0.7514 - val_loss: 0.5177 - val_accuracy: 0.7272
+Epoch 18/100
+
+Learning rate for epoch 18 is 0.005488115828484297
+400000/400000 - 1006s - loss: 0.4800 - accuracy: 0.7558 - val_loss: 0.5997 - val_accuracy: 0.6958
+Epoch 19/100
+
+Learning rate for epoch 19 is 0.005220457911491394
+400000/400000 - 1005s - loss: 0.4744 - accuracy: 0.7599 - val_loss: 0.5196 - val_accuracy: 0.7305
+Epoch 20/100
+
+Learning rate for epoch 20 is 0.004965852480381727
+400000/400000 - 1003s - loss: 0.4676 - accuracy: 0.7644 - val_loss: 0.5102 - val_accuracy: 0.7364
+Epoch 21/100
+
+Learning rate for epoch 21 is 0.004723665304481983
+400000/400000 - 1002s - loss: 0.4617 - accuracy: 0.7681 - val_loss: 0.5223 - val_accuracy: 0.7337
+Epoch 22/100
+
+Learning rate for epoch 22 is 0.0044932896271348
+400000/400000 - 1004s - loss: 0.4532 - accuracy: 0.7730 - val_loss: 0.5112 - val_accuracy: 0.7345
+Epoch 23/100
+
+Learning rate for epoch 23 is 0.0042741489596664906
+400000/400000 - 1004s - loss: 0.4454 - accuracy: 0.7780 - val_loss: 0.5549 - val_accuracy: 0.7161
+Epoch 24/100
+
+Learning rate for epoch 24 is 0.004065696615725756
+400000/400000 - 1001s - loss: 0.4363 - accuracy: 0.7843 - val_loss: 0.5781 - val_accuracy: 0.7006
+Epoch 25/100
+
+Learning rate for epoch 25 is 0.0038674103561788797
+400000/400000 - 1004s - loss: 0.4256 - accuracy: 0.7903 - val_loss: 0.5325 - val_accuracy: 0.7278
+Epoch 26/100
+
+Learning rate for epoch 26 is 0.0036787944845855236
+400000/400000 - 1002s - loss: 0.4148 - accuracy: 0.7972 - val_loss: 0.5643 - val_accuracy: 0.7287
+Epoch 27/100
+
+Learning rate for epoch 27 is 0.003499377518892288
+400000/400000 - 1002s - loss: 0.4029 - accuracy: 0.8036 - val_loss: 0.5741 - val_accuracy: 0.7176
+Epoch 28/100
+
+Learning rate for epoch 28 is 0.0033287107944488525
+400000/400000 - 1003s - loss: 0.3896 - accuracy: 0.8122 - val_loss: 0.6291 - val_accuracy: 0.7007
+Epoch 29/100
+
+Learning rate for epoch 29 is 0.003166367532685399
+400000/400000 - 1005s - loss: 0.3731 - accuracy: 0.8226 - val_loss: 0.5907 - val_accuracy: 0.7188
+Epoch 30/100
+
+Learning rate for epoch 30 is 0.003011941909790039
+400000/400000 - 1003s - loss: 0.3571 - accuracy: 0.8316 - val_loss: 0.6540 - val_accuracy: 0.7030
+2020-05-20 02:49:34.106946: W tensorflow/core/kernels/data/generator_dataset_op.cc:103] Error occurred when finalizing GeneratorDataset iterator: Cancelled: Operation was cancelled
+2020-05-20 02:49:34.108613: W tensorflow/core/kernels/data/generator_dataset_op.cc:103] Error occurred when finalizing GeneratorDataset iterator: Cancelled: Operation was cancelled
+2020-05-20 02:49:34.110126: W tensorflow/core/kernels/data/generator_dataset_op.cc:103] Error occurred when finalizing GeneratorDataset iterator: Cancelled: Operation was cancelled
+2020-05-20 02:49:34.110847: W tensorflow/core/kernels/data/generator_dataset_op.cc:103] Error occurred when finalizing GeneratorDataset iterator: Cancelled: Operation was cancelled
+training took 30340.7 seconds
+
+Characterizing performance...
+
+building summary tables...
+test_model_on_file: reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuEThreeStrings_Qtot1000_Qst400_4_7_data.npz
+test_model_on_file: reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_6_7_data.npz
+test_model_on_file: reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_8_data.npz
+test_model_on_file: reading /gpfs/summit/home/abf5460/tauCNN/threeStringsQSt2000/NuTauThreeStrings_Qtot1000_Qst400_9_2_data.npz
+building tables took 157.9 seconds
+-----
+cut: 0
+n nu_e per year: 36.513
+n nu_tau per year: 23.180
+-----
+-----
+cut: 0.9
+n nu_e per year: 0.337
+n nu_tau per year: 2.321
+-----
+-----
+cut: 0.95
+n nu_e per year: 0.126
+n nu_tau per year: 1.800
+-----
+-----
+cut: 0.99
+n nu_e per year: 0.007
+n nu_tau per year: 1.158
+-----

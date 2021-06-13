@@ -1,0 +1,22 @@
+#Make images
+
+infile  = $(infile)
+gcdfile = $(gcdfile)
+run = $(run)
+file = $(file) 
+Sim = data
+
+executable = /data/user/dpankova/double_pulse/Make_Images.py
+arguments = -o /data/user/dpankova/double_pulse/images/Data/2020/Images_Data2020_$(run)_$INT(file,%04d) -i $(infile) -gcd $(gcdfile) -t $(Sim)
+run_as_owner = True
+initialdir = /data/user/dpankova/double_pulse/
+log = /scratch/dpankova/double_pulse/Make_Images_Data2020_$(run)_$INT(file,%04d).log
+output = /scratch/dpankova/double_pulse/Make_Images_Data2020_$(run)_$INT(file,%04d).out
+error = /scratch/dpankova/double_pulse/Make_Images_Data2020_$(run)_$INT(file,%04d).error
+should_transfer_files   = YES
+transfer_input_files = /data/user/dpankova/double_pulse/Reconstruction.py, /data/user/dpankova/double_pulse/QTot.py, /data/user/dpankova/double_pulse/PolygonContainment.py
++AccountingGroup="sanctioned.$ENV(USER)"
+request_cpus = 1
+request_memory = 4GB                       
+request_disk = 1GB 
+queue 

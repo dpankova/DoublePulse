@@ -7,7 +7,7 @@ file = $(file)
 Sim = data
 
 executable = /data/user/dpankova/double_pulse/Make_Images.py
-arguments = -o /data/user/dpankova/double_pulse/images/BurnSample_100x/Images_BurnSample_$(run)_$INT(file,%04d) -i $(infile) -gcd $(gcdfile) -t $(Sim)
+arguments = -o /data/user/dpankova/double_pulse/images/BurnSample_100x_2/Images_BurnSample_$(run)_$INT(file,%04d) -i $(infile) -gcd $(gcdfile) -t $(Sim)
 run_as_owner = True
 initialdir = /data/user/dpankova/double_pulse/
 log = /scratch/dpankova/double_pulse/Make_Images_BurnSample_$(run)_$INT(file,%04d).log

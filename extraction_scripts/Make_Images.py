@@ -1,4 +1,4 @@
-#!/bin/sh /cvmfs/icecube.opensciencegrid.org/py2-v3.1.1/icetray-start
+#!/bin/sh /cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/icetray-start
 #METAPROJECT combo/stable
 
 
@@ -55,7 +55,7 @@ parser.add_argument("-y","--year",
                     dest="year",
                     type=int,
                     default=2012,
-		    choices=[2011,2012,2016],
+                    choices=[2011,2012,2016],
                     help="production year, only matters for corsika")
 
 parser.add_argument("-set","--dataset",
@@ -86,7 +86,9 @@ GEO = 'ic86'
 C=0.299792458                                                                  
 N=1.3195
 V=C/N
-QST_THRES = 400 # PE, cut on max string charge
+QST0_THRES = 2000 # PE, cut on max string charge
+QST1_THRES = 10 # PE, cut on max string charge
+QST2_THRES = 10 # PE, cut on max string charge
 QTOT_THRES = 1000 #PE, cut on total charge
 LLH_THRES = -0.1 #LLh diffrence between spe and cascade reco
 DIST_ST_CUT = 150**2 #m, look at string within this distance of the max string
@@ -122,7 +124,8 @@ geometry = g_frame["I3Geometry"].omgeo
 #Add input files to file list 
 for files in infiles:
     for filename in glob.glob(files):
-        file_list.append(filename)
+        if not ('_IT.i3.' in filename) and not ('_EHE.i3.' in filename):
+            file_list.append(filename)
 
 print(file_list) #Final file list
 
@@ -233,8 +236,8 @@ elif data_type =='corsika':
     WEIGHT_KEY = "CorsikaWeightMap"
     MCTREE_KEY = 'I3MCTree'
     if year == 2012:
-	PULSES_KEY = 'SplitInIcePulses'
-	if dataset == 12379:
+        PULSES_KEY = 'SplitInIcePulses'
+        if dataset == 12379:
             weight_dtype = np.dtype(
             [
                 ('AreaSum',np.float32),
@@ -258,11 +261,11 @@ elif data_type =='corsika':
                 ('ThetaMin',np.float32),
                 ('TimeScale',np.float32),
                 ('Weight',np.float32),
-	    ]
+            ]
             )
-	else:
-	    weight_dtype = np.dtype(
-	    [
+        else:
+            weight_dtype = np.dtype(
+            [
                 ("AreaSum" ,np.float32),
                 ("Atmosphere",np.float32),
                 ("CylinderLength",np.float32),
@@ -287,9 +290,9 @@ elif data_type =='corsika':
             )    
 
     elif year == 2011:
-	PULSES_KEY = 'OfflinePulses'
-	if dataset == 10668:
-	    weight_dtype = np.dtype(
+        PULSES_KEY = 'OfflinePulses'
+        if dataset == 10668:
+            weight_dtype = np.dtype(
             [
                 ('AreaSum',np.float32),
                 ('Atmosphere',np.float32),
@@ -312,8 +315,8 @@ elif data_type =='corsika':
                 ('Weight',np.float32)
             ]
             )       
-	else:
-	    weight_dtype = np.dtype(
+        else:
+            weight_dtype = np.dtype(
             [
                 ('AreaSum',np.float32),
                 ('Atmosphere',np.float32),
@@ -331,11 +334,11 @@ elif data_type =='corsika':
                 ('TimeScale',np.float32),
                 ('Weight',np.float32)
             ]
-	    )
+            )
 
     elif year == 2016:
-	PULSES_KEY = 'SplitInIcePulses'
-	MCTREE_KEY = 'I3MCTree_preMuonProp'
+        PULSES_KEY = 'SplitInIcePulses'
+        MCTREE_KEY = 'I3MCTree_preMuonProp'
         weight_dtype = np.dtype(
             [
                 ('AreaSum',np.float32),
@@ -365,7 +368,7 @@ elif data_type == 'muongun':
     MCTREE_KEY = 'I3MCTree_preMuonProp'
     weight_dtype = np.dtype(
         [
-	    ('ThisisData',np.float32),
+            ('ThisisData',np.float32),
         ]
     )  
 
@@ -376,14 +379,14 @@ else: #data
     MCTREE_KEY = 'None'
     weight_dtype = np.dtype(
         [
-	    ('ThisisData',np.float32),
+            ('ThisisData',np.float32),
         ]
     )  
 
-#Output data format	    
+#Output data format         
 if data_type == 'muongun':
     info_dtype = np.dtype(
-	[
+        [
             ("id", id_dtype),
             ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
             ("qtot", np.float32),
@@ -393,22 +396,24 @@ if data_type == 'muongun':
             ("logan_veto", veto_dtype),                                                  
             ("hese", hese_dtype),
             ("weight_val", np.float32),        
-	]
+        ]
     )
      
 else:
     info_dtype = np.dtype(
-	[
+        [
             ("id", id_dtype),
             ("image", np.float32, (N_X_BINS, N_Y_BINS, N_CHANNELS)),
             ("qtot", np.float32),
             ("qst", st_info_dtype, N_CHANNELS),
             ("primary", particle_dtype),
             ("prim_daughter", particle_dtype),
+            ("trck_reco", particle_dtype),
+            ("cscd_reco", particle_dtype),
             ("logan_veto", veto_dtype),                                                  
             ("hese", hese_dtype),
             ("weight_dict", weight_dtype),        
-	]
+        ]
     )
 
 
@@ -490,14 +495,14 @@ def Check_Data(frame):
             has_pulses = False
 
     if MCTREE_KEY == 'None':
-	has_mctree = True
+        has_mctree = True
     else:
-	has_mctree = frame.Has(MCTREE_KEY)
+        has_mctree = frame.Has(MCTREE_KEY)
 
     if WEIGHT_KEY == 'None':
         has_weights = True
     else:
-	has_weights = frame.Has(WEIGHT_KEY)
+        has_weights = frame.Has(WEIGHT_KEY)
 
     #Images can be made if event has all the keys, passed == True
     passed = has_header and has_weights and has_rawdata and has_mctree and has_pulses 
@@ -551,8 +556,8 @@ def Get_Charges(frame):
     max_qst = string_qs[0][0] 
 
     #MAKE Charge CUT
-    if (max_qst < QST_THRES) or (qtot < QTOT_THRES):
- #       print("FAILED CHARGE CUT ", max_qst, qtot)
+    if (max_qst < QST0_THRES) or (qtot < QTOT_THRES):
+   #     print("FAILED CHARGE CUT ", max_qst, qtot)
         return False
     
     # find neighboring strings and sort by charge
@@ -566,12 +571,15 @@ def Get_Charges(frame):
             near_max_strings.append((q, st, dist_st))
 
     if len(near_max_strings) < N_CHANNELS:
-	print('FAILED Not enough hit stirngs in the event')
+        print('FAILED Not enough hit stirngs in the event')
         return False
 
     for ch in range(N_CHANNELS): 
         st_info[['q','num','dist']][ch] = (near_max_strings[ch][0],near_max_strings[ch][1],near_max_strings[ch][2])
-        
+    
+    if (st_info['q'][1] < QST1_THRES) or (st_info['q'][2] < QST2_THRES):
+        return False
+
     return True
 
 def LLH_cut(frame):
@@ -581,8 +589,8 @@ def LLH_cut(frame):
     if has_llhcut:
         llhcut = frame['SPEFit32_DPFitParams'].rlogl - frame['CascadeLlhVertexFit_DPParams'].ReducedLlh
     else:
-	print('FAILED: No recos')
-	return False
+        print('FAILED: No recos')
+        return False
 
     #make llh cut
     if llhcut < LLH_THRES:
@@ -605,31 +613,31 @@ def Make_Image(frame):
     #Log Weight info
     weight = np.zeros(1,dtype = weight_dtype)
     if data_type in ['genie', 'corsika']:
-	w = dict(frame[WEIGHT_KEY])
-	weight[list(w.keys())] = tuple(w.values())
+        w = dict(frame[WEIGHT_KEY])
+        weight[list(w.keys())] = tuple(w.values())
     
     #Log MCTree info 
     primary = np.zeros(1,dtype = particle_dtype)
     prim_daughter = np.zeros(1,dtype = particle_dtype)
     if not data_type == 'data':
     #find primary particle
-	mctree = frame[MCTREE_KEY]
-	daughter = None
-	if data_type == 'genie':
+        mctree = frame[MCTREE_KEY]
+        daughter = None
+        if data_type == 'genie':
             prim = dataclasses.get_most_energetic_neutrino(mctree)
-	    
-	    max_energy = 0
-	    for part in mctree.children(prim.id):
-	        if part.energy > max_energy:
-		    max_enegy = part.energy
-		    daughter = part
-	else:
-	    prim = dataclasses.get_most_energetic_primary(mctree)
+            
+            max_energy = 0
+            for part in mctree.children(prim.id):
+                if (part.energy > max_energy) and (abs(part.pdg_encoding) in [11,12,13,14,15,16,17,18]):
+                    max_enegy = part.energy
+                    daughter = part
+        else:
+            prim = dataclasses.get_most_energetic_primary(mctree)
             daughter = dataclasses.get_most_energetic_muon(mctree)
            
         
-	#if no children, then daughter is a duplicate of primary
-	if  daughter is None:
+        #if no children, then daughter is a duplicate of primary
+        if  daughter is None:
             print("MCTree has no primary children")
             primary[["tree_id","pdg","energy","position","direction","time","length"]] =\
             ([prim.id.majorID, prim.id.minorID], prim.pdg_encoding, prim.energy,\
@@ -641,8 +649,8 @@ def Make_Image(frame):
              [prim.pos.x,prim.pos.y,prim.pos.z],\
              [prim.dir.zenith,prim.dir.azimuth], prim.time, prim.length)
 
-	 #if there are children, daughter is the child with highest energy
-	else:
+         #if there are children, daughter is the child with highest energy
+        else:
             primary[["tree_id","pdg","energy","position","direction","time","length"]] =\
             ([prim.id.majorID, prim.id.minorID], prim.pdg_encoding, prim.energy,\
              [prim.pos.x,prim.pos.y,prim.pos.z],\
@@ -667,34 +675,52 @@ def Make_Image(frame):
    
     #Log logan's veto parameters
     veto = np.zeros(1,dtype = veto_dtype)
-    veto_cas_rlogl = -999
-    veto_spe_rlogl = 999
-    veto_cas_rlogl_ndc = -999
-    veto_spe_rlogl_ndc = 999
+    trck_reco = np.zeros(1,dtype = particle_dtype)
+    cscd_reco = np.zeros(1,dtype = particle_dtype)
+    trck= dataclasses.I3Particle()
+    cscs= dataclasses.I3Particle()
+ 
+    veto_cas_rlogl = 999
+    veto_spe_rlogl = -999
+    veto_cas_rlogl_ndc = 999
+    veto_spe_rlogl_ndc = -999
     veto_fh_z = -999
     veto_svv_z = -999
     veto_ldp = -999
     
-    if frame.Has('HESE3_VHESelfVetoVertexPos') and frame.Has('SPEFit32_DPFitParams') and frame.Has('CascadeLlhVertexFit_DPParams')\
-    and frame.Has('SPEFit32_noDC_DPFitParams') and frame.Has('CascadeLlhVertexFit_noDC_DPParams') and frame.Has('depthFirstHit')\
-    and frame.Has("LeastDistanceToPolygon_Veto"):
-         
+
+ 
+    if frame.Has('SPEFit32_DPFitParams') and frame.Has('CascadeLlhVertexFit_DPParams'):
         veto_cas_rlogl = frame['CascadeLlhVertexFit_DPParams'].ReducedLlh
         veto_spe_rlogl = frame['SPEFit32_DPFitParams'].rlogl
+        trck = frame['CascadeLlhVertexFit_DP']
+        cscd = frame['SPEFit32_DP']
+
+    if frame.Has('SPEFit32_noDC_DPFitParams') and frame.Has('CascadeLlhVertexFit_noDC_DPParams'):
         veto_cas_rlogl_ndc = frame['CascadeLlhVertexFit_noDC_DPParams'].ReducedLlh
         veto_spe_rlogl_ndc = frame['SPEFit32_noDC_DPFitParams'].rlogl
-        veto_fh_z = frame['depthFirstHit'].value
+       
+    if frame.Has('HESE3_VHESelfVetoVertexPos'):
         veto_svv_z = frame['HESE3_VHESelfVetoVertexPos'].z
+       
+    if frame.Has("LeastDistanceToPolygon_Veto"):
         veto_ldp = frame["LeastDistanceToPolygon_Veto"].value
-        #trck = frame['CascadeLlhVertexFit_DP']
-        #cscd = frame['SPEFit32_DP']
+
+    if frame.Has('depthFirstHit'):     
+        veto_fh_z = frame['depthFirstHit'].value
     
+   
     veto[["SPE_rlogl","Cascade_rlogl","SPE_rlogl_noDC", "Cascade_rlogl_noDC","FirstHitZ","VHESelfVetoVertexPosZ","LeastDistanceToPolygon_Veto"]] =\
     (veto_spe_rlogl,veto_cas_rlogl,veto_spe_rlogl_ndc,veto_cas_rlogl_ndc,veto_fh_z,veto_svv_z,veto_ldp)                     
+    trck_reco[["tree_id","pdg","energy","position","direction","time","length"]] =\
+    ([trck.id.majorID, trck.id.minorID], trck.pdg_encoding, trck.energy,[trck.pos.x,trck.pos.y,trck.pos.z],\
+     [trck.dir.zenith,trck.dir.azimuth], trck.time, trck.length)
+    cscd_reco[["tree_id","pdg","energy","position","direction","time","length"]] =\
+    ([cscd.id.majorID, cscd.id.minorID], cscd.pdg_encoding, cscd.energy,[cscd.pos.x,cscd.pos.y,cscd.pos.z],\
+     [cscd.dir.zenith, cscd.dir.azimuth],cscd.time, cscd.length)
+    
     pulses= dataclasses.I3RecoPulseSeriesMap.from_frame(frame, PULSES_KEY)
     wf_map = frame["CalibratedWaveformsHLCATWD"]   
-
-
     #make image from raw waveforms 
     wfms = []
     
@@ -703,7 +729,7 @@ def Make_Image(frame):
             if (omkey.string == stnum):
                 for wf in wf_map.get(omkey, []):
                     if wf.status == 0: #and wf.source_index == 0:
-			wfms.append({
+                        wfms.append({
                                 'wfm': wf.waveform,
                                 'time': wf.time,  
                                 'width': wf.bin_width,
@@ -718,13 +744,13 @@ def Make_Image(frame):
     wf_pos_arr = np.zeros(shape=(3,N_Y_BINS, N_CHANNELS))
     
     if data_type == 'data':
-	save = []
-	calib = frame['I3Calibration']
-	status = frame['I3DetectorStatus']
-	width = 3.33334
-	for om, ps in pulses.items():
+        save = []
+        calib = frame['I3Calibration']
+        status = frame['I3DetectorStatus']
+        width = 3.33334
+        for om, ps in pulses.items():
 
-	    if not om.string in st_info['num']:
+            if not om.string in st_info['num']:
                 continue
 
             if om in wf_map:
@@ -735,7 +761,7 @@ def Make_Image(frame):
                 if has_good_wf:
                     continue
 
-
+                    
             chl = np.where(st_info['num'] == om.string)
             p_time = np.min([i.time for i in ps])
             min_time = p_time - width*15
@@ -745,16 +771,16 @@ def Make_Image(frame):
             cal = calib.dom_cal[om]
             stat = status.dom_status[om]
             wf_vals=wavereform.refold_pulses(ps, I3Waveform.ATWD, 0, cal, stat, times, False)
-	    wfms.append({
-		    'wfm': wf_vals,
-		    'time': min_time,  
-		    'width': width,
-		    'dom_idx': om.om - 1,
-		    'img_ch': chl[0][0],
-		    'om_pos': [geometry[om].position.x,geometry[om].position.y,geometry[om].position.z]
-		    })
+            
+            wfms.append({
+                    'wfm': wf_vals,
+                    'time': min_time,  
+                    'width': width,
+                    'dom_idx': om.om - 1,
+                    'img_ch': chl[0][0],
+                    'om_pos': [geometry[om].position.x,geometry[om].position.y,geometry[om].position.z]
+                    })
 
-    
     if len(wfms) < 2:
         print("FAILED only %d WF" %len(wfms) )
         return False
@@ -815,13 +841,15 @@ def Make_Image(frame):
     event = np.zeros(1,dtype = info_dtype)    
     #Log all the event info
     if data_type == 'muongun':
-       	w = frame['MuonWeight'].value
-	event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_val"]]=\
+        w = frame['MuonWeight'].value
+        event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_val"]]=\
            (id[0], im, qtot, st_info, primary[0], prim_daughter[0], veto[0],hese[0], w)
     else:
-	event[["id","image","qtot","qst","primary","prim_daughter","logan_veto","hese","weight_dict"]]=\
-           (id[0], im, qtot, st_info, primary[0], prim_daughter[0], veto[0],hese[0], weight[0])
-#    print(event['weight_val'])
+        event[["id","image","qtot","qst","primary","prim_daughter","trck_reco","cscd_reco","logan_veto","hese","weight_dict"]]=\
+           (id[0], im, qtot, st_info, primary[0], prim_daughter[0],trck_reco[0],cscd_reco[0],veto[0],hese[0], weight[0])
+#    print(event['qtot'],event['qst'],event['logan_veto'])
+#    print(event['trck_reco'])
+#    print(event['cscd_reco'])
     data.append(event)
     
 #@icetray.traysegment
@@ -839,7 +867,7 @@ def TestCuts(file_list):
     tray.AddSegment(PolygonContainment.PolygonContainment, 'polyfit', geometry = GEO,RecoVertex='HESE3_VHESelfVetoVertexPos',outputname='_Veto')
    # tray.AddModule("I3TensorOfInertia",InputReadout = pulse_series)
     tray.AddModule("I3WaveCalibrator", "calibrator")(        
-	("Launches", "InIceRawData"),  # EHE burn sample IC86
+        ("Launches", "InIceRawData"),  # EHE burn sample IC86
         ("Waveforms", "CalibratedWaveforms"),
         ("WaveformRange", "CalibratedWaveformRange_DP"),
         ("ATWDSaturationMargin",123), # 1023-900 == 123
