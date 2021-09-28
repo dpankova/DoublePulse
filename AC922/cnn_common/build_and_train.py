@@ -431,7 +431,7 @@ def characterize_model_2class(model, e_file_list, tau_file_list, input_adapter=N
 
     n_per_year_plot(tables, validation_files_per_flavor)
 
-    for cut in [0, 0.9, 0.95, 0.99]:
+    for cut in [0, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99]:
         print('-----')
         print(f'cut: {cut}')
         for table, n_files, flav in zip(tables,
@@ -470,7 +470,7 @@ def characterize_model_3class(model, e_file_list, mu_file_list, tau_file_list,
 
     n_per_year_plot(tables, validation_files_per_flavor)
 
-    for cut in [0, 0.9, 0.95, 0.99]:
+    for cut in [0, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99]:
         print('-----')
         print(f'cut: {cut}')
         for table, n_files, flav in zip(tables,

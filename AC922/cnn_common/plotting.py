@@ -19,7 +19,7 @@ def plot_history(history, name='training_history'):
     if not name.endswith('.pdf'):
         name += '.pdf'
     
-    plt.savefig(f'{name}', bbox='tight')
+    plt.savefig(f'{name}', bbox_inches='tight')
     plt.clf()
     
 
@@ -44,8 +44,9 @@ def n_per_year_plot(tables, files_per_flavor, name='n_per_year'):
     if not name.endswith('.pdf'):
         name += '.pdf'
     
-    plt.savefig(f'{name}', bbox='tight')
+    plt.savefig(f'{name}', bbox_inches='tight')
     
     plt.clf()
     
     plt.rcParams['figure.figsize'] = orig_size
+

@@ -654,6 +654,7 @@ def train_with_callback_2class(model, initial_rate,
         epochs=n_epochs,
         callbacks=callbacks,
         class_weight={0:ratio[0],1:ratio[1]},
+        verbose=2,
         validation_data=validation_tuple,
         sample_weight=training_weights,
         shuffle=True).history
@@ -830,8 +831,8 @@ def make_summary_table(data, return_fields, output_table=None):
 def test_model_on_file_vars(model,
                        file_name,
                        batch_size=256,
-                       return_fields=[('weight', 'OneWeight'),
-                                      ('weight', 'PrimaryNeutrinoEnergy')],
+                       return_fields=[('weight_dict', 'OneWeight'),
+                                      ('weight_dict', 'PrimaryNeutrinoEnergy')],
                        input_adapter=None,
                        norm_mode='per_image',
                        mean=None,
@@ -884,8 +885,8 @@ def test_model_on_file_vars(model,
 def test_model_on_file(model,
                        file_name,
                        batch_size=256,
-                       return_fields=[('weight', 'OneWeight'),
-                                      ('weight', 'PrimaryNeutrinoEnergy')],
+                       return_fields=[('weight_dict', 'OneWeight'),
+                                      ('weight_dict', 'PrimaryNeutrinoEnergy')],
                        input_adapter=None,
                        norm_mode='per_image',
                        mean=None,
@@ -968,7 +969,7 @@ def get_annual_weights(one_weights,
 
     secs_per_year = 31536000
 
-    total_events = 100*evts_per_file*n_files
+    total_events = evts_per_file*n_files
 
     flux_weights = 1e-18*secs_per_year*phi_0*(nu_E/100e3)**(-spectral_index)
 
