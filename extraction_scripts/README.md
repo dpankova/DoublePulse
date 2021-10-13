@@ -29,5 +29,26 @@ To use uncomemnt the relevant line.\
 \
 MAKE SURE TO SET THE DIRECTORIES BEFORE RUNNING
 
+# Step by step
+Previous part was written by Dasha, this part is written by Timothee.
+## Produce the images
+In `/home/tgregoire/DoublePulse/extraction_scripts/` use `condor_submit` on the Make_Images_*.sub, it will run Make_Images.py into jobs.
+Each Make_Images_*.sub corresponds to different sets, the documentation about some of them is in https://wiki.icecube.wisc.edu/index.php/Simulation_and_Datas
+ets_Used
+
+The .log, .out and .error files of the jobs are in `/scratch/tgregoire/DoublePulse/` (accessible from submit-1 not from cobalt). If some files are corrupted
+it will kill the job, check the error file for that and add the corrupted files in the corrupted_files list of Make_Images.py before re-running the job.
+The output files are in /data/user/tgregoire/DoublePulse/.
+
+## Transfer the image files to luzern
+Connect to luzern, go to `/data/tmg5746/Images/` and use rsync.
+For example, for nominal NuE files: `rsync --update -r --include='*NuE*' tgregoire@data.icecube.wisc.edu:"/data/user/tgregoire/DoublePulse/nominal/NuE/" ./no
+minal/NuE/`
+
+## Process the images to get the scores
+In `DoublePulse/notebooks/tgregoire/` modify `ProcessImages.py` line 159-169 to process only the files you are interested in (neutrino type, nom
+inal or which systematic set...) and run it.
+The output score files are in `/data/tmg5746/Scores/`
+
 
  

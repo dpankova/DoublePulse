@@ -1,0 +1,63 @@
+#Make images
+Sim=genie
+
+executable = /home/tgregoire/DoublePulse/extraction_scripts/Make_Images.py
+arguments = -it $INT(It) -o /data/user/tgregoire/DoublePulse/nominal/$(Type)/Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num) -i /data/sim/IceCube/2016/filtered/level2/neutrino-generator/$INT(DID)/00$INT(Num,%02d)000-00$INT(Num,%02d)999/Level2_IC86.2016_$(Type).0$INT(DID).0$INT(Num,%02d)$(Step)??.i3.zst -gcd /cvmfs/icecube.opensciencegrid.org/data/GCD/GeoCalibDetectorStatus_AVG_55697-57531_PASS2_SPE_withScaledNoise.i3.gz -t $(Sim) -y 2016
+run_as_owner = True
+initialdir = /home/tgregoire/DoublePulse/extraction_scripts/
+log = /scratch/tgregoire/DoublePulse/nominal/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Step).log
+output = /scratch/tgregoire/DoublePulse/nominal/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Step).out
+error = /scratch/tgregoire/DoublePulse/nominal/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Step).error
+should_transfer_files   = YES
+transfer_input_files = /home/tgregoire/DoublePulse/extraction_scripts/Reconstruction.py, /home/tgregoire/DoublePulse/extraction_scripts/QTot.py, /home/tgregoire/DoublePulse/extraction_scripts/PolygonContainment.py
+request_cpus = 1
+request_memory = 8GB
+request_disk = 1GB
+
+It = 1
+
+DID = 21219
+Type = NuTau
+queue 10 Num in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
+
+DID = 21217
+Type = NuMu
+queue 10 Num in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
+
+
+DID = 21002
+Type = NuMu
+queue 10 Num in (0, 1, 2, 3, 4)
+
+DID = 21218
+Type = NuE
+queue 10 Num in (0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 22, 23, 24, 25, 28, 29, 33, 40, 43)
+
+
+It = 2
+# remove Step in input file
+arguments = -it $INT(It) -o /data/user/tgregoire/DoublePulse/nominal/$(Type)/Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num) -i /data/sim/IceCube/2016/filtered/level2/neutrino-generator/$INT(DID)/00$INT(Num,%02d)000-00$INT(Num,%02d)999/Level2_IC86.2016_$(Type).0$INT(DID).0$INT(Num,%02d)???.i3.zst -gcd /cvmfs/icecube.opensciencegrid.org/data/GCD/GeoCalibDetectorStatus_AVG_55697-57531_PASS2_SPE_withScaledNoise.i3.gz -t $(Sim) -y 2016
+
+DID = 21219
+Type = NuTau
+queue 1 Num in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
+
+DID = 21217
+Type = NuMu
+queue 1 Num in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
+
+DID = 21002
+Type = NuMu
+queue 1 Num in (0, 1, 2, 3, 4)
+
+DID = 21218
+Type = NuE
+queue 1 Num in (0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 22, 23, 24, 25, 28, 29, 33, 40, 43)
+
+
+It = 3
+
+DID = 21218
+Type = NuE
+queue 1 Num in (0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 22, 23, 24, 25, 28, 29, 33, 40, 43)
+

@@ -55,7 +55,7 @@ parser.add_argument("-y","--year",
                     dest="year",
                     type=int,
                     default=2012,
-                    choices=[2011,2012,2016],
+                    choices=[2011,2012,2016,2020],
                     help="production year, only matters for corsika")
 
 parser.add_argument("-set","--dataset",
@@ -232,6 +232,64 @@ if data_type =='genie':
             ('EnergyLost',np.float32)
         ]
     )
+    if year == 2016 or year == 2020:
+        MCTREE_KEY = 'I3MCTree_preMuonProp'
+        weight_dtype = np.dtype(
+            [
+            ('PrimaryNeutrinoAzimuth',np.float32),
+            ('TotalColumnDepthCGS',np.float32),
+            ('MaxAzimuth',np.float32),
+            ('SelectionWeight',np.float32),
+            ('InIceNeutrinoEnergy',np.float32),
+            ('PowerLawIndex',np.float32),
+            ('TotalPrimaryWeight',np.float32),
+            ('PrimaryNeutrinoZenith',np.float32),
+            ('TotalWeight',np.float32),
+            ('PropagationWeight',np.float32),
+            ('NInIceNus',np.float32),
+            ('TrueActiveLengthBefore',np.float32),
+            ('TypeWeight',np.float32),
+            ('PrimaryNeutrinoType',np.int64),
+            ('RangeInMeter',np.float32),
+            ('BjorkenY',np.float32),
+            ('MinZenith',np.float32),
+            ('InIceNeutrinoType',np.float32),
+            ('CylinderRadius',np.float32),
+            ('BjorkenX',np.float32),
+            ('InteractionPositionWeight',np.float32),
+            ('RangeInMWE',np.float32),
+            ('InteractionColumnDepthCGS',np.float32),
+            ('CylinderHeight',np.float32),
+            ('SimMode', np.float32),
+            ('InjectionCylinderRadius', np.float32),
+            ('MinAzimuth',np.float32),
+            ('TotalXsectionCGS',np.float32),
+            ('InjectionOrigin_y',np.float32),
+            ('OneWeightPerType',np.float32),
+            ('ImpactParam',np.float32),
+            ('InteractionTypeWeight',np.float32),
+            ('InteractionType',np.float32),
+            ('TrueActiveLengthAfter',np.float32),
+            ('InjectionCylinderHeight', np.float32),
+            ('MaxZenith',np.float32),
+            ('InjectionOrigin_x',np.float32),
+            ('InjectionOrigin_z',np.float32),
+            ('InteractionXsectionCGS',np.float32),
+            ('PrimaryNeutrinoEnergy',np.float32),
+            ('DirectionWeight',np.float32),
+            ('InjectionAreaCGS',np.float32),
+            ('MinEnergyLog',np.float32),
+            ('SolidAngle',np.float32),
+            ('LengthInVolume',np.float32),
+            ('NEvents',np.uint32),
+            ('OneWeight',np.float32),
+            ('MaxEnergyLog',np.float32),
+            ('InteractionWeight',np.float32),
+            ('EnergyLost',np.float32)
+            ]
+        )
+
+
 elif data_type =='corsika':
     WEIGHT_KEY = "CorsikaWeightMap"
     MCTREE_KEY = 'I3MCTree'
@@ -507,14 +565,14 @@ def Check_Data(frame):
     #Images can be made if event has all the keys, passed == True
     passed = has_header and has_weights and has_rawdata and has_mctree and has_pulses 
     if passed:
-#        print("PASSES")
+        #print("PASSES")
         if data_type == 'genie': #Keep only events with right interaction type
             if frame[WEIGHT_KEY]['InteractionType'] != it:
                 return False
 
         return True
     else:
-#        print("Not PASSES", has_header,has_weights,has_rawdata,has_mctree,has_pulses)
+        #print("Not PASSES", has_header,has_weights,has_rawdata,has_mctree,has_pulses)
         return False
 
 
@@ -557,7 +615,7 @@ def Get_Charges(frame):
 
     #MAKE Charge CUT
     if (max_qst < QST0_THRES) or (qtot < QTOT_THRES):
-   #     print("FAILED CHARGE CUT ", max_qst, qtot)
+        #print("FAILED CHARGE CUT ", max_qst, qtot)
         return False
     
     # find neighboring strings and sort by charge
@@ -594,7 +652,7 @@ def LLH_cut(frame):
 
     #make llh cut
     if llhcut < LLH_THRES:
- #       print("Failed LLH cut = ",llhcut)
+        #print("Failed LLH cut = ",llhcut)
         return False
     else:
         print("Passed LLH cut = ",llhcut)
@@ -892,7 +950,50 @@ def TestCuts(file_list):
     tray.Finish()
     return
 
+corrupted_files = ['/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0003000-0003999/Level2_IC86.2016_NuMu.021002.003930.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0001000-0001999/Level2_IC86.2016_NuMu.021002.001502.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0002000-0002999/Level2_IC86.2016_NuMu.021002.002273.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0004000-0004999/Level2_IC86.2016_NuMu.021002.004059.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0002000-0002999/Level2_IC86.2016_NuMu.021002.002815.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0004000-0004999/Level2_IC86.2016_NuMu.021002.004743.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0004000-0004999/Level2_IC86.2016_NuMu.021002.004820.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21002/0002000-0002999/Level2_IC86.2016_NuMu.021002.002832.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21871/a-.10/0000000-0000999/Level2_IC86.2020_NuE.021871.000339.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21871/a+.10/0000000-0000999/Level2_IC86.2020_NuE.021871.000852.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21872/s-.10/0000000-0000999/Level2_IC86.2020_NuE.021872.000024.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21868/s+.10/0000000-0000999/Level2_IC86.2020_NuTau.021868.000950.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21870/s+.10/0000000-0000999/Level2_IC86.2020_NuE.021870.000222.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21868/s-.10/0000000-0000999/Level2_IC86.2020_NuTau.021868.000441.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21871/s-.10/0000000-0000999/Level2_IC86.2020_NuE.021871.000050.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21870/a-.10/0000000-0000999/Level2_IC86.2020_NuE.021870.000162.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0012000-0012999/Level2_IC86.2016_NuMu.021217.012952.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011873.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0013000-0013999/Level2_IC86.2016_NuMu.021217.013229.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011134.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011915.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011417.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011213.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0013000-0013999/Level2_IC86.2016_NuMu.021217.013230.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011236.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011443.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0012000-0012999/Level2_IC86.2016_NuMu.021217.012956.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011880.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011893.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011262.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0012000-0012999/Level2_IC86.2016_NuMu.021217.012958.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011452.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0013000-0013999/Level2_IC86.2016_NuMu.021217.013239.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0013000-0013999/Level2_IC86.2016_NuMu.021217.013249.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0011000-0011999/Level2_IC86.2016_NuMu.021217.011458.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0012000-0012999/Level2_IC86.2016_NuMu.021217.012966.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0012000-0012999/Level2_IC86.2016_NuMu.021217.012967.i3.zst',
+                   '/data/sim/IceCube/2016/filtered/level2/neutrino-generator/21217/0013000-0013999/Level2_IC86.2016_NuMu.021217.013262.i3.zst',
+                   '/data/sim/IceCube/2020/filtered/level2/neutrino-generator/21869/a+.05/0000000-0000999/Level2_IC86.2020_NuTau.021869.000068.i3.zst',
+                  ]
+
 for file in file_list:
+    if file in corrupted_files:
+        continue
     #main data array
     data = []
     qtot = 0 #total event charge
@@ -908,7 +1009,7 @@ for file in file_list:
         
     TestCuts(file_list = [gfile,file])
     print(file, " i3 file done")
-    
+
     data = np.array(data)
     with open(txtfilename, 'a') as f:
         f.write(str(data.shape[0])+"\n")

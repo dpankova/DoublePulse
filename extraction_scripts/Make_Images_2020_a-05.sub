@@ -1,0 +1,111 @@
+#Make images
+
+Sim=genie
+Syst=a-.05
+
+executable = /home/tgregoire/DoublePulse/extraction_scripts/Make_Images.py
+arguments = -it $INT(It) -o /data/user/tgregoire/DoublePulse/syst/$(Type)/Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Syst)_$(Step) -i /data/sim/IceCube/2020/filtered/level2/neutrino-generator/$INT(DID)/$(Syst)/000$INT(Num)000-000$INT(Num)999/Level2_IC86.2020_$(Type).0$INT(DID).00$INT(Num)$(Step)*.i3.zst -gcd /cvmfs/icecube.opensciencegrid.org/data/GCD/GeoCalibDetectorStatus_2020.Run134142.Pass2_V0.i3.gz -t $(Sim) -y 2020
+run_as_owner = True
+initialdir = /home/tgregoire/DoublePulse/extraction_scripts/
+log = /scratch/tgregoire/DoublePulse/syst/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Syst)_$(Step).log
+output = /scratch/tgregoire/DoublePulse/syst/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Syst)_$(Step).out
+error = /scratch/tgregoire/DoublePulse/syst/Make_Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Syst)_$(Step).error
+should_transfer_files   = YES
+transfer_input_files = /home/tgregoire/DoublePulse/extraction_scripts/Reconstruction.py, /home/tgregoire/DoublePulse/extraction_scripts/QTot.py, /home/tgregoire/DoublePulse/extraction_scripts/PolygonContainment.py
+request_cpus = 1
+request_memory = 8GB                       
+request_disk = 1GB 
+
+It = 1
+
+#DID = 21867
+#Type = NuTau
+#queue 10 Num in (0)
+
+DID = 21868
+Type = NuTau
+queue 10 Num in (0)
+
+DID = 21869
+Type = NuTau
+queue 10 Num in (0)
+
+#DID = 21813
+#Type = NuMu
+#queue 10 Num in (0)
+
+#DID = 21814
+#Type = NuMu
+#queue 10 Num in (0)
+
+#DID = 21815
+#Type = NuMu
+#queue 10 Num in (0)
+
+#DID = 21870
+#Type = NuE
+#queue 10 Num in (0)
+
+DID = 21871
+Type = NuE
+queue 10 Num in (0)
+
+DID = 21872
+Type = NuE
+queue 10 Num in (0)
+
+It = 2
+arguments = -it $INT(It) -o /data/user/tgregoire/DoublePulse/syst/$(Type)/Images_$(Type)_$INT(It)_$INT(DID)_$INT(Num)_$(Syst)_$(Step) -i /data/sim/IceCube/2020/filtered/level2/neutrino-generator/$INT(DID)/$(Syst)/000$INT(Num)000-000$INT(Num)999/Level2_IC86.2020_$(Type).0$INT(DID).00$INT(Num)*.i3.zst -gcd /cvmfs/icecube.opensciencegrid.org/data/GCD/GeoCalibDetectorStatus_2020.Run134142.Pass2_V0.i3.gz -t $(Sim) -y 2020
+
+#DID = 21867
+#Type = NuTau
+#queue 1 Num in (0)
+
+DID = 21868
+Type = NuTau
+queue 1 Num in (0)
+
+DID = 21869
+Type = NuTau
+queue 1 Num in (0)
+
+#DID = 21813
+#Type = NuMu
+#queue 1 Num in (0)
+
+#DID = 21814
+#Type = NuMu
+#queue 1 Num in (0)
+
+#DID = 21815
+#Type = NuMu
+#queue 1 Num in (0)
+
+#DID = 21870
+#Type = NuE
+#queue 1 Num in (0)
+
+DID = 21871
+Type = NuE
+queue 1 Num in (0)
+
+DID = 21872
+Type = NuE
+queue 1 Num in (0)
+
+
+It = 3
+#DID = 21870
+#Type = NuE
+#queue 1 Num in (0)
+
+DID = 21871
+Type = NuE
+queue 1 Num in (0)
+
+DID = 21872
+Type = NuE
+queue 1 Num in (0)
+
+
+
