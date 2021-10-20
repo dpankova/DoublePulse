@@ -1139,3 +1139,15 @@ RunNum Good_i3 Good_it LiveTime ActiveStrings ActiveDoms ActiveInIce OutDir     
 135314 1       1       28805.75 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0523/Run00135314                         
 135315 1       1       28808.23 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0523/Run00135315                         
 135316 1       1       28805.7  86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0523/Run00135316                         
+135317 1       1       28809.32 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0524/Run00135317                         
+135318 1       1       28804.93 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0524/Run00135318                         
+135319 1       1       28807.8  86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0524/Run00135319                         
+135320 1       1       28800.02 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0525/Run00135320                         
+135321 1       1       28809.71 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0525/Run00135321                         
+135322 1       1       28805.63 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0525/Run00135322                         
+135323 1       1       28787.7  86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0526/Run00135323                         
+135324 1       1       28803.55 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0526/Run00135324                         
+135325 1       1       28805.33 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0526/Run00135325                         
+135326 1       1       28803.93 86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0527/Run00135326                         
+135327 1       1       28808.6  86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0527/Run00135327                         
+135328 1       1       8665.15  86            5395       5052        /data/exp/IceCube/2021/filtered/level2/0527/Run00135328                         
