@@ -18,7 +18,9 @@ time = 0 #total livetime
 for filename in gr_files:
     f = open(filename, 'r')
     lines = f.readlines()
-    for line in lines[2:]: #first two lines are header
+    for line in lines:
+        if not line.startswith('/data/exp/IceCube/'): # pass header lines
+            continue
         sp = line.split()
         if int(sp[1])==1 and not (int(sp[0]) in bs_runs): #take runs that end with 00, good_i3
             if sp[7][-1] == '/':
