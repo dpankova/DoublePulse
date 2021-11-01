@@ -11,6 +11,7 @@ Take the following steps to run these notebooks on the cobalts:
 
 4. Activate the `doublepulse` environment with `conda activate doublepulse`.
 
-5. Launch jupyter, e.g. `jupyter-lab --no-browser --port <port>`. You will need to create an SSH tunnel to be able to access this jupyter server from your local browser. An example command to create an SSH tunnel from your local machine through `pub` to `cobalt08` is `ssh -t -t -L<port>:localhost:<port> pub 'ssh -L<port>:localhost:<port> cobalt08`.
+5. Launch jupyter, e.g. `jupyter-lab --no-browser --port <port>`. You will need to create an SSH tunnel to be able to access this jupyter server from your local browser. An example command to create an SSH tunnel from your local machine through `pub` to `cobalt08` is:
+    `ssh -t -t -L<port>:localhost:<port> pub 'ssh -L<port>:localhost:<port> cobalt08`.
 
 6. Run the notebooks. The outputs should be identical to those shown in versions on GitHub. 
