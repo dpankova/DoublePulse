@@ -18,7 +18,9 @@ time = 0 #total livetime
 for filename in gr_files:
     f = open(filename, 'r')
     lines = f.readlines()
-    for line in lines[2:]: #first two lines are header
+    for line in lines:
+        if not line.startswith('/data/exp/IceCube/'): # pass header lines
+            continue
         sp = line.split()
         if int(sp[1])==1 and not (int(sp[0]) in bs_runs): #take runs that end with 00, good_i3
             if sp[7][-1] == '/':
@@ -53,7 +55,8 @@ for r in runs:
         bad_runs_list.append([r[0]])
         continue
 
-    dec = len(run_files)//100 #one job for 10 i3 files
+    subrun_max = max([int(subrun_file.split('Subrun00000000_')[1][:8]) for subrun_file in run_files_all if subrun_file.endswith('i3.zst')])
+    dec = subrun_max//100 #one job for 10 i3 files
     for i in range(dec+1):
         job_name = "r{0:s}f{1:d}".format(r[0],i)
         job = "JOB {0:s} /data/user/dpankova/double_pulse/BurnSample/Make_Images_Data.sub".format(job_name)
