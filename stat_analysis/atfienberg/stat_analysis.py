@@ -41,14 +41,20 @@ class Analysis:
         """Initialize from a DataFrame and configuration parameters
         """
         conv_flux = nuflux.makeFlux(conv_model).getFlux
-        weight_conv = lambda d: calc_atmos_weights(d, conv_flux) * livetime
+        weight_conv = (
+            lambda d: calc_atmos_weights(d, conv_flux) * livetime * conv_norm_mean
+        )
         prompt_flux = nuflux.makeFlux(prompt_model).getFlux
-        weight_prompt = lambda d: calc_atmos_weights(d, prompt_flux) * livetime
+        weight_prompt = (
+            lambda d: calc_atmos_weights(d, prompt_flux) * livetime * prompt_norm_mean
+        )
         weight_astro = (
-            lambda d: calc_astro_weights(d, astro_phi, astro_gamma) * livetime
+            lambda d: calc_astro_weights(d, astro_phi, astro_gamma)
+            * livetime
+            * astro_norm_mean
         )
         # muon gun weights are precalculated and stored in the "oneweight" field
-        weight_mg = lambda d: d.oneweight * livetime
+        weight_mg = lambda d: d.oneweight * livetime * mg_norm_mean
 
         tau_CC_mask = (np.abs(exp_df.pid) == 16) & (exp_df.it == 1)
         # pid == 0 indicates muon gun
@@ -69,12 +75,13 @@ class Analysis:
             weight_prompt,
             weight_mg,
         ]
+        # scaling is handled in the weight functions above
         self._group_nominals = [
             1.0,
-            astro_norm_mean,
-            conv_norm_mean,
-            prompt_norm_mean,
-            mg_norm_mean,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
         ]
         self._group_scales = [
             0.0,
@@ -165,7 +172,7 @@ class Analysis:
                 self._syst_widths,
                 self._prior_types,
                 self._rng,
-            )
+            ).squeeze()
         else:
             # sample without flux uncertainties or MC uncertainties
             return sample(
