@@ -15,4 +15,4 @@ Take the following steps to run these notebooks on the cobalts:
 
     `ssh -t -t -L<port>:localhost:<port> pub 'ssh -L<port>:localhost:<port> cobalt08'`.
 
-6. Run the notebooks. The outputs should be identical to those shown in versions on GitHub. 
+6. Run the notebooks. The outputs should be identical to those shown in the versions on GitHub. 
