@@ -511,12 +511,12 @@ def harvest_generators(infiles):
     return generator
 
 if data_type == 'muongun':
-    muongun_nfiles={21317:9996,21316:9999,21315:15000}
-    generator_set1_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21315/0000000-0000999/*.i3.zst")
+    muongun_nfiles={21317:20053,21316:40114,21315:15044}
+    generator_set1_infile=glob.glob("/data/sim/IceCube/2016/filtered/level2/MuonGun/21315/00*000-00*999/*.i3.zst")
     generator_set1=harvest_generators([generator_set1_infile[0]]); infiles_set1 = muongun_nfiles[21315]
-    generator_set2_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21316/0000000-0000999/*.i3.zst")
+    generator_set2_infile=glob.glob("/data/sim/IceCube/2016/filtered/level2/MuonGun/21316/00*000-00*999/*.i3.zst")
     generator_set2=harvest_generators([generator_set2_infile[0]]); infiles_set2 = muongun_nfiles[21316]
-    generator_set3_infile=glob.glob("/data/sim/IceCube/2016/generated/MuonGun/21317/0000000-0000999/*.i3.zst")
+    generator_set3_infile=glob.glob("/data/sim/IceCube/2016/filtered/level2/MuonGun/21317/00*000-00*999/*.i3.zst")
     generator_set3=harvest_generators([generator_set3_infile[0]]); infiles_set3 = muongun_nfiles[21317]
     mg_generator=((infiles_set1*generator_set1) +
                (infiles_set2*generator_set2) +
@@ -941,8 +941,8 @@ def TestCuts(file_list):
         ("Force",True),
         )
     #uncomment Next two for muongun
-    #tray.Add(I3MCTpmp_2_I3MCT,Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
-    #tray.Add(effective_area,model=mg_model,generator=mg_generator,Streams=[icetray.I3Frame.Physics])
+    #tray.Add(I3MCTpmp_2_I3MCT,Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]) # TODO add if muongun ?
+    #tray.Add(effective_area,model=mg_model,generator=mg_generator,Streams=[icetray.I3Frame.Physics]) # TODO add if muongun ?
     tray.Add(Make_Image, "getwave", Streams=[icetray.I3Frame.Physics])
 #    tray.AddModule('I3Writer', 'writer', Filename= outfile+'.i3.bz2', Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics], DropOrphanStreams=[icetray.I3Frame.DAQ])
     tray.AddModule('TrashCan','thecan')
